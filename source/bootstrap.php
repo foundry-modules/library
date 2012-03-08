@@ -71,6 +71,10 @@ dispatch
 	.to("$FOUNDRY_NAMESPACE Bootstrap")
 	.at(function($, manifest) {
 
+		<?php if ($environment=="development"): ?>
+		window.F = $;
+		<?php endif; ?>
+
 		$.rootPath    = '<?php echo JURI::root(); ?>';
 		$.indexUrl    = '<?php echo JURI::base() . "index.php"; ?>';
 		$.path        = '<?php echo $foundryPath; ?>';
