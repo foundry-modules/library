@@ -48,6 +48,7 @@ if( !$loaded ) {
 				'utils',
 				'uri',
 				'module',
+				'mvc/lang.json',
 				'script',
 				'stylesheet',
 				'language',
