@@ -21,7 +21,13 @@ if( !$loaded ) {
 
 	$version = "$FOUNDRY_VERSION";
 
-	$environment = JRequest::getString( 'foundry_environment', 'development', 'GET' );
+	$environment = JRequest::getString( 'foundry_environment', '', 'GET' );
+
+	if( $environment == '' && isset( $foundry_environment ) ) {
+		$environment = $foundry_environment;
+	} else {
+		$environment = 'production';
+	}
 
 	$foundryPath = rtrim(JURI::root(), '/') . '/media/foundry/' . $version . '/';
 
