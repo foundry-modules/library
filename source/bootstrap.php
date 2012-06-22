@@ -15,7 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 
 static $loaded	= false;
 
-if( !$loaded ) {
+if (!$loaded) {
 
 	$doc = JFactory::getDocument();
 
@@ -23,10 +23,14 @@ if( !$loaded ) {
 
 	$environment = JRequest::getString( 'foundry_environment', '', 'GET' );
 
-	if( $environment == '' && isset( $foundry_environment ) ) {
-		$environment = $foundry_environment;
-	} else {
+	if (empty($environment)) {
+
 		$environment = 'production';
+
+		if (isset($foundry_environment)) {
+
+			$environment = $foundry_environment;
+		}
 	}
 
 	$foundryPath = rtrim(JURI::root(), '/') . '/media/foundry/' . $version . '/';
