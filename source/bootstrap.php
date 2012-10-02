@@ -91,7 +91,7 @@ dispatch
 		$.path        = '<?php echo $foundryPath; ?>';
 		$.scriptPath  = '<?php echo $scriptPath; ?>';
 		$.environment = '<?php echo $environment; ?>';
-		$.Joomla.version = <?php echo floatval(JVERSION); ?>;
+		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
 
 		// Make sure core plugins are installed first
 		dispatch("$FOUNDRY_NAMESPACE")
