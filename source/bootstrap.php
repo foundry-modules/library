@@ -89,7 +89,8 @@ dispatch
 		$.indexUrl    = '<?php echo JURI::base() . "index.php"; ?>';
 		$.path        = '<?php echo $foundryPath; ?>';
 		$.scriptPath  = '<?php echo $scriptPath; ?>';
-		$.environment = '<?php echo $environment ?>';
+		$.environment = '<?php echo $environment; ?>';
+		$.Joomla.version = <?php echo floatval(JVERSION); ?>;
 
 		// Make sure core plugins are installed first
 		dispatch("$FOUNDRY_NAMESPACE")
