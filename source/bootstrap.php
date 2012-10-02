@@ -55,6 +55,7 @@ if (!$loaded) {
 				'dispatch',
 				'abstractComponent',
 				'jquery',
+				'joomla',
 				'utils',
 				'uri',
 				'module',
