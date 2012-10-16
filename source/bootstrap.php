@@ -92,6 +92,9 @@ dispatch
 		$.scriptPath  = '<?php echo $scriptPath; ?>';
 		$.environment = '<?php echo $environment; ?>';
 		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
+		$.locale = {
+			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
+		};
 
 		// Make sure core plugins are installed first
 		dispatch("$FOUNDRY_NAMESPACE")
