@@ -17,6 +17,7 @@ static $loaded	= false;
 
 if (!$loaded) {
 
+	$app = JFactory::getApplication();
 	$doc = JFactory::getDocument();
 
 	$version = "$FOUNDRY_VERSION";
@@ -87,7 +88,7 @@ dispatch
 		<?php endif; ?>
 
 		$.rootPath    = '<?php echo JURI::root(); ?>';
-		$.indexUrl    = '<?php echo JURI::base() . "index.php"; ?>';
+		$.indexUrl    = '<?php echo JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php') ?>';
 		$.path        = '<?php echo $foundryPath; ?>';
 		$.scriptPath  = '<?php echo $scriptPath; ?>';
 		$.environment = '<?php echo $environment; ?>';
