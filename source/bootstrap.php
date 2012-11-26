@@ -65,6 +65,7 @@ if (!$loaded) {
 				'language',
 				'template',
 				'require',
+				'iframe-transport',
 				'component'
 			);
 
