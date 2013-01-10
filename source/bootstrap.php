@@ -59,6 +59,7 @@ if (!$loaded) {
 				'underscore',
 				'utils',
 				'uri',
+				'mvc',
 				'joomla',
 				'module',
 				'script',
@@ -67,6 +68,7 @@ if (!$loaded) {
 				'template',
 				'require',
 				'iframe-transport',
+				'server',
 				'component'
 			);
 
