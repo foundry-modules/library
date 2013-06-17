@@ -64,7 +64,6 @@ if (!$loaded) {
 				'module',
 				'script',
 				'stylesheet',
-				'rule',
 				'language',
 				'template',
 				'require',
