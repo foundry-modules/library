@@ -65,13 +65,13 @@ if (!$loaded) {
 				break;
 
 			case 'local':
-				$foundry_path = rtrim(JURI::root(), '/') . '/media/foundry/' . $version . '/';
+				$foundry_path = rtrim(JURI::root(), '/') . '/media/foundry/' . $foundry_version . '/';
 				break;
 		}
 	}
 
 	// Load Foundry scripts in header
-	switch ($environment) {
+	switch ($foundry_environment) {
 
 		case 'static':
 			// Does not load anything as foundry.js
