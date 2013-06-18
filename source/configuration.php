@@ -70,9 +70,6 @@ if (!$loaded) {
 		}
 	}
 
-	// OTHER SETTINGS -------------------------------------------//
-	$foundry_scriptPath = $foundryPath . 'scripts/';
-
 	// Load Foundry scripts in header
 	switch ($environment) {
 
@@ -115,7 +112,7 @@ if (!$loaded) {
 	}
 
 	foreach ($scripts as $i=>$script) {
-		$doc->addScript($scriptPath . $script . '.js');
+		$doc->addScript($foundry_path . 'scripts/' . $script . (($foundry_mode=='uncompressed') ? '.js' : '.min.js'));
 	}
 
 	ob_start();
@@ -135,7 +132,6 @@ dispatch
 		$.source        = '<?php echo $foundry_source; ?>';
 		$.environment   = '<?php echo $foundry_environment; ?>';
 		$.mode          = '<?php echo $foundry_mode; ?>';
-		$.scriptPath    = '<?php echo $foundry_scriptPath; ?>';
 		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
 		$.locale = {
 			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
