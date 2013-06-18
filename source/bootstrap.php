@@ -20,38 +20,78 @@ if (!$loaded) {
 	$app = JFactory::getApplication();
 	$doc = JFactory::getDocument();
 
-	$version = "$FOUNDRY_VERSION";
+	$foundry_version = "$FOUNDRY_VERSION";
 
-	$environment = JRequest::getString( 'foundry_environment', '', 'GET' );
 
-	if (empty($environment)) {
+	// FOUNDRY ENVIRONMENT ---------------------------------------//
+	// If no foundry_environment is set, default to optimized.
+	if (empty($foundry_environment)) {
+		$foundry_environment = 'optimized';
+	}
 
-		$environment = 'production';
+	// Allow foundry_environment to be overriden via url
+	$foundry_environment = JRequest::getString('fd_env', $foundry_environment, 'GET');
 
-		if (isset($foundry_environment)) {
 
-			$environment = $foundry_environment;
+	// FOUNDRY SOURCE -------------------------------------------//
+	// If no foundry_source is set, default to local.
+	// Component should explicitly set this to remote when
+	// running under static mode.
+	if (empty($foundry_source)) {
+		$foundry_source = 'local';
+	}
+
+	// Allow foundry_source to be overriden via url
+	$foundry_source = JRequest::getString('fd_src', $foundry_source, 'GET');
+
+
+	// FOUNDRY MODE ---------------------------------------------//
+	// If no foundry_mode is set, default to compressed.
+	if (empty($foundry_mode)) {
+		$foundry_mode = 'compressed';
+	}
+
+	// Allow foundry_source to be overriden via url
+	$foundry_mode = JRequest::getString('fd_mode', $foundry_mode, 'GET');	
+
+	// FOUNDRY PATH ---------------------------------------------//
+	// If no foundry_path is set, default to local or remote.
+	if (empty($foundry_path)) {
+
+		switch ($foundry_source) {
+			case 'remote':
+				// TODO: Set up Foundry CDN server.
+				$foundry_path = '';
+				break;
+
+			case 'local':
+				$foundry_path = rtrim(JURI::root(), '/') . '/media/foundry/' . $version . '/';
+				break;
 		}
 	}
 
-	$foundryPath = rtrim(JURI::root(), '/') . '/media/foundry/' . $version . '/';
+	// OTHER SETTINGS -------------------------------------------//
+	$foundry_scriptPath = $foundryPath . 'scripts/';
 
+	// Load Foundry scripts in header
 	switch ($environment) {
 
-		case 'production':
+		case 'static':
+			// Does not load anything as foundry.js
+			// is included within component script file.
+			$scripts = array();
+			break;
 
-			$scriptPath = $foundryPath . 'scripts/';
-
+		case 'optimized':
+			// Loads a single "foundry.js"
+			// containing all core foundry files.
 			$scripts = array(
 				'foundry'
 			);
-
 			break;
 
 		case 'development':
-
-			$scriptPath = $foundryPath . 'scripts_/';
-
+			// Load core foundry files separately.
 			$scripts = array(
 				'dispatch',
 				'abstractComponent',
@@ -71,12 +111,10 @@ if (!$loaded) {
 				'server',
 				'component'
 			);
-
 			break;
 	}
 
 	foreach ($scripts as $i=>$script) {
-
 		$doc->addScript($scriptPath . $script . '.js');
 	}
 
@@ -84,18 +122,20 @@ if (!$loaded) {
 ?>
 
 dispatch
-	.to("$FOUNDRY_NAMESPACE Bootstrap")
+	.to("$FOUNDRY_NAMESPACE Configuration")
 	.at(function($, manifest) {
 
-		<?php if ($environment=="development"): ?>
+		<?php if ($foundry_environment=="development"): ?>
 		window.F = $;
 		<?php endif; ?>
 
-		$.rootPath    = '<?php echo JURI::root(); ?>';
-		$.indexUrl    = '<?php echo JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php') ?>';
-		$.path        = '<?php echo $foundryPath; ?>';
-		$.scriptPath  = '<?php echo $scriptPath; ?>';
-		$.environment = '<?php echo $environment; ?>';
+		$.rootPath      = '<?php echo JURI::root(); ?>';
+		$.indexUrl      = '<?php echo JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php') ?>';
+		$.path          = '<?php echo $foundry_path; ?>';
+		$.source        = '<?php echo $foundry_source; ?>';
+		$.environment   = '<?php echo $foundry_environment; ?>';
+		$.mode          = '<?php echo $foundry_mode; ?>';
+		$.scriptPath    = '<?php echo $foundry_scriptPath; ?>';
 		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
 		$.locale = {
 			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
