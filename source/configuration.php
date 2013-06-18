@@ -93,6 +93,8 @@ if (!$loaded) {
 				'dispatch',
 				'abstractComponent',
 				'jquery',
+				'bootstrap',
+				'responsive',
 				'underscore',
 				'utils',
 				'uri',
