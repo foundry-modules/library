@@ -155,3 +155,85 @@ class FoundryCompiler
 		return CssMin::minify( $contents );
 	}
 }
+
+class FoundryCompiler_Foundry {
+
+	public $path = FOUNDRY_PATH;
+
+	public function createModule()
+	{
+		// Rollback to foundry script when the module type if library
+		if ($moduleType=='library') {
+			$adapterName = 'foundry';
+			$moduleType  = 'script';
+		}
+	}
+
+	public function getPath($name, $type='script', $extension='')
+	{
+		switch ($type) {
+			case 'script':
+				$folder = 'scripts';
+				break;
+
+			case 'stylesheet':
+				$folder = 'styles';
+				break;
+
+			case 'template':
+				$folder = 'scripts';
+				break;
+		}
+
+		return $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $name . $extension;
+	}
+
+	private function getContent($name, $type='script', $extension='js')
+	{
+		$file = $this->getPath($name, $type, $extension);
+
+		// Let's read the manifest data.
+		if (!JFile::exists($file)) {
+			return null;
+		}
+
+		$content = JFile::read($file);
+
+		return $content;
+	}
+
+	public function getManifest($name)
+	{
+		$manifestContent = $this->getContent($name, 'script', 'json');
+
+		if (empty($manifestContent)) {
+			return null;
+		}
+
+		$json = new Services_JSON();
+		$manifest = $json->decode($manifestContent);
+
+		return $manifest;
+	}
+
+	public function getScript($name)
+	{
+		$scriptContent = $this->getContent($name, 'script', 'js');
+
+		return $scriptContent;		
+	}
+
+	public function getStylesheet($name)
+	{
+		$stylesheetContent = $this->getContent($name, 'stylesheet', 'css');
+
+		return $stylesheetContent;
+	}
+
+	public function getTemplate($name)
+	{
+		$templateContent = $this->getContent($name, 'template', 'htm');
+
+		return $templateContent;
+	}
+}
