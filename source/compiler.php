@@ -14,7 +14,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 require_once('constants.php');
-
+require_once(FOUNDRY_CLASSES . '/module.php');
 require_once(FOUNDRY_LIB . '/json.php');
 require_once(FOUNDRY_LIB . '/jsmin.php');
 require_once(FOUNDRY_LIB . '/cssmin.php');
@@ -109,14 +109,21 @@ class FoundryCompiler
 					$adapterName
 				);
 
-				if (!$module->loaded) {
+				if (!$module->added) {
+
+					// Create an adapter entry
+					if (!array_key_exists($module->adapter, $deps)) {
+						$deps[$module->adapter] = array();
+					}
 
 					// Add it to the dependency tree
-					if (!array_key_exists($module->type, $deps)) {
-						$deps[$module->type][] = array();
+					if (!array_key_exists($module->type, $deps[$module->adapter])) {
+						$deps[$module->adapter][$module->type][] = array();
 					};
 
-					$deps[$module->type][] = $module
+					$deps[$module->type][] = $module;
+
+					$module->added = true;
 
 					if ($module->type=='script') {
 
@@ -129,36 +136,146 @@ class FoundryCompiler
 
 		return $deps;
 	}
-	/**
-	 * Minifies javascript
-	 *
-	 * @since	1.0
-	 * @access	public
-	 * @param	string
-	 * @return	
-	 */
-	public function minifyjs( $contents )
+
+	public function getNames($modules)
 	{
-		return JSMinPlus::minify( $contents );
+		$moduleNames = array();
+
+		foreach ($modules as $module) {
+			$moduleNames = '"' . $module->name . '"';
+		}
+
+		 return '[' . implode(',', $stylesheetNames) . ']';
 	}
 
-	/**
-	 * uglifies css codes
-	 *
-	 * @since	1.0
-	 * @access	public
-	 * @param	string
-	 * @return	
-	 */
-	public function minifycss( $contents )
+	public function getData($modules)
 	{
-		return CssMin::minify( $contents );
+		$json = new Services_JSON();
+		$data = array();
+		
+		foreach ($modules as $module) {
+			$data[] = $module->getData();
+		}
+
+		return implode("\r\n", $data);
+	}
+
+	public function getJSONData($modules, $minify=false)
+	{
+		$json = new Services_JSON();
+		$data = array();
+
+		foreach ($modules as $module) {
+			$data[$module->name] = $module->getData();
+		}
+
+		return $json->encode($data);
+	}
+
+	public function getStylesheetData($stylesheets)
+	{
+		$json = new Services_JSON();
+
+		$data = new stdClass();
+		$data->content = $this->minifyCSS($this->getData($stylesheets));
+
+		return $json->encode($data);
+	}
+
+	public function getManifest($file)
+	{
+		if (!JFile::exists($file)) {
+			return null;
+		}
+
+		$content = JFile::read($file);
+
+		if (empty($content)) {
+			return null;
+		}
+
+		$json = new Services_JSON();
+		$manifest = $json->decode($content);
+
+		return $manifest;
+	}
+
+	public function build($compileMode='optimized', $deps=array(), $minify=false)
+	{
+		ob_start();
+			include('compiler/' . $compileMode . '.php');
+			$contents = ob_get_contents();
+		ob_end_clean();
+
+		if ($minify) {
+			return $this->minifyJS($contents);
+		}
+
+		return $contents;
+	}
+
+	/*
+		$manifest             Path to manifest file where dependencies will be crawled.
+
+		$options['static']    Path to save static script (without extension). If this field is blank, static script won't be compiled.
+		$options['optimized'] Path to save optimized script (without extension). If this field is blank, optimized script won't be compiled.
+		$options['extras']    Path to save extras script (without extension). If this field is blank, optimized script won't be compiled.
+		$options['minify']    Boolean to determine whether to minify script.			
+	*/
+
+	public function compile($manifest="", $options)
+	{
+		$manifest = $this->getManifest($manifest);
+
+		// If manifest is invalid, stop.
+		if (empty($manifest)) {
+			return;
+		}
+
+		// Build dependencies
+		$deps = $this->getDependencies($manifest);
+
+		$modes = array('static', 'optimized', 'extras');
+
+		foreach($modes as $mode) {
+
+			if (empty($options[$mode])) continue;
+
+			$file = $options[$mode];
+
+			// Uncompressed file
+			$uncompressed = $this->build($mode, $deps);
+			$state = JFile::write($file . '.js', $uncompressed);
+
+			// Compressed file
+			if ($options->minify) {
+				$compressed = $this->build($mode, $deps, true);
+				$state = JFile::write($file . '.min.js', $compressed);
+			}
+		}
+	}
+
+	public function minifyJS($contents)
+	{
+		return JSMinPlus::minify($contents);
+	}
+
+	public function minifyCSS($contents)
+	{
+		return CssMin::minify($contents);
 	}
 }
 
 class FoundryCompiler_Foundry {
 
 	public $path = FOUNDRY_PATH;
+
+	public $compiler = null;
+
+	public function __construct($compiler) {
+
+		$this->compiler = $compiler;
+	}
 
 	public function createModule()
 	{
@@ -192,7 +309,6 @@ class FoundryCompiler_Foundry {
 	{
 		$file = $this->getPath($name, $type, $extension);
 
-		// Let's read the manifest data.
 		if (!JFile::exists($file)) {
 			return null;
 		}
@@ -204,11 +320,9 @@ class FoundryCompiler_Foundry {
 
 	public function getManifest($name)
 	{
-		$manifestContent = $this->getContent($name, 'script', 'json');
+		$manifestFile = $this->getPath($name, 'script', 'json');
 
-		if (empty($manifestContent)) {
-			return null;
-		}
+		$manifestContent = $this->compiler->getManifest($manifestFile);
 
 		$json = new Services_JSON();
 		$manifest = $json->decode($manifestContent);
