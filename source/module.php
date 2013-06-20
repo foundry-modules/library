@@ -19,7 +19,7 @@ class FoundryModule
 	public $type      = null;
 	public $adapter   = null;
 	public $compiler  = null;
-	public $loaded    = false;
+	public $added    = false;
 
 	private $manifest = null;
 	private $data     = null;
