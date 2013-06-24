@@ -12,14 +12,22 @@ foreach($deps as $componentName => $component) {
 
 		$templates = $component['template'];
 
-		echo '$.require.template.loader(' . $this->getJSONData($templates) . ');\n'
+		echo '$.require.template.loader(' . $this->getJSONData($templates) . ');' . "\n";
 	}
 
-	// 5. Templates
+	// 5. Views
+	if (!empty($component['view'])) {
+
+		$views = $component['view'];
+
+		echo '$.require.template.loader(' . $this->getJSONData($views) . ');' . "\n";
+	}
+
+	// 6. Languages
 	if (!empty($component['language'])) {
 
 		$languages = $component['language'];
 
-		echo '$.require.language.loader(' . $this->getJSONData($languages) . ');\n'
+		echo '$.require.language.loader(' . $this->getJSONData($languages) . ');' . "\n";
 	}
 }

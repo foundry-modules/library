@@ -149,17 +149,17 @@ class FoundryCompiler
 		$moduleNames = array();
 
 		foreach ($modules as $module) {
-			$moduleNames = '"' . $module->name . '"';
+			$moduleNames[] = '"' . $module->name . '"';
 		}
 
-		 return '[' . implode(',', $stylesheetNames) . ']';
+		 return '[' . implode(',', $moduleNames) . ']';
 	}
 
 	public function getData($modules)
 	{
 		$json = new Services_JSON();
 		$data = array();
-		
+
 		foreach ($modules as $module) {
 			$data[] = $module->getData();
 		}
@@ -207,10 +207,19 @@ class FoundryCompiler
 		return $manifest;
 	}
 
+	public function getFoundry()
+	{
+		$foundry = FOUNDRY_PATH . '/scripts/foundry.js';
+
+		$content = JFile::read($foundry);
+
+		return $content;
+	}
+
 	public function build($compileMode='optimized', $deps=array(), $minify=false)
 	{
 		ob_start();
-			include('compiler/' . $compileMode . '.php');
+			include(FOUNDRY_PATH . '/joomla/compiler/' . $compileMode . '.php');
 			$contents = ob_get_contents();
 		ob_end_clean();
 
@@ -252,14 +261,18 @@ class FoundryCompiler
 
 			// Uncompressed file
 			$uncompressed = $this->build($mode, $deps);
+
 			$state = JFile::write($file . '.js', $uncompressed);
 
 			// Compressed file
-			if ($options->minify) {
+			if (!empty($options->minify) && $option->minify) {
 				$compressed = $this->build($mode, $deps, true);
 				$state = JFile::write($file . '.min.js', $compressed);
 			}
 		}
+
+		var_dump($options);
+		exit;
 	}
 
 	public function minifyJS($contents)
@@ -319,7 +332,7 @@ class FoundryCompiler_Foundry {
 				break;
 		}
 
-		return $this->path . '/' . $folder . '/' . $name . $extension;
+		return $this->path . '/' . $folder . '/' . $name . '.' . $extension;
 	}
 
 	private function getContent($name, $type='script', $extension='js')
@@ -339,10 +352,7 @@ class FoundryCompiler_Foundry {
 	{
 		$manifestFile = $this->getPath($name, 'script', 'json');
 
-		$manifestContent = $this->compiler->getManifest($manifestFile);
-
-		$json = new Services_JSON();
-		$manifest = $json->decode($manifestContent);
+		$manifest = $this->compiler->getManifest($manifestFile);
 
 		return $manifest;
 	}

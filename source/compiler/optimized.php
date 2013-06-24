@@ -14,7 +14,7 @@ foreach($deps as $componentName => $component) {
 
 		$scripts = $component['script'];
 
-		echo '$.module(' . $this->getNames($scripts) . ');';
+		echo '$.module(' . $this->getNames($scripts) . ');' . "\n";
 	}
 
 	// 1.2 Predefine templates
@@ -22,15 +22,15 @@ foreach($deps as $componentName => $component) {
 
 		$templates = $component['template'];
 
-		echo '$.require.template.loader(' . $this->getNames($templates) . ');\n'
+		echo '$.require.template.loader(' . $this->getNames($templates) . ');' . "\n";
 	}
 
 	// 1.3 Predefine languages
-	if (!empty($component['languages'])) {
+	if (!empty($component['language'])) {
 
 		$languages = $component['language'];
 
-		echo '$.require.language.loader(' . $this->getNames($languages) . ');\n'
+		echo '$.require.language.loader(' . $this->getNames($languages) . ');' . "\n";
 	}
 
 	// 2. Stylesheets
@@ -38,11 +38,11 @@ foreach($deps as $componentName => $component) {
 
 		$stylesheets = $component['stylesheet'];
 
-		echo '(function(){';
-		echo 'var stylesheetNames = ' . $this->getNames($stylesheets) . ';';
-		echo 'var state = ($.stylesheet(' . $this->generateStylesheetData($stylesheets) . '})) ? "resolve" : "reject";';
-		echo '$.each(stylesheetNames, function(i, stylesheet){ $.require.stylesheet.loader(stylesheet)[state](); });'
-		echo '})();'
+		echo '(function(){' . "\n";
+		echo 'var stylesheetNames = ' . $this->getNames($stylesheets) . ';' . "\n";
+		echo 'var state = ($.stylesheet(' . $this->getStylesheetData($stylesheets) . ')) ? "resolve" : "reject";' . "\n";
+		echo '$.each(stylesheetNames, function(i, stylesheet){ $.require.stylesheet.loader(stylesheet)[state](); });' . "\n";
+		echo '})();' . "\n";
 	}	
 }
 

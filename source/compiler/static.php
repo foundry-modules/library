@@ -26,9 +26,9 @@ defined( '_JEXEC' ) or die( 'Unauthorized Access' );
 	------
 	[component.extras.js]
 	This is the failsafe extras file.
-	1. Contents of component dependencies for:
-	   * Templates
-	   * Languages
+	1. Templates
+	2. Views
+	3. Languages
 
 	[component.extras.json --> component.extras.%hash%.js]
 	This is so we can quickly construct a "template x language" hash.
@@ -51,7 +51,7 @@ if ($compileMode=='static') {
 
 			$templates = $deps['foundry']['template'];
 
-			echo '$.require.template.loader(' . $this->getJSONData($templates) . ');\n'
+			echo '$.require.template.loader(' . $this->getJSONData($templates) . ');' . "\n";
 		}
 
 		// 3. Stylesheets
@@ -59,11 +59,11 @@ if ($compileMode=='static') {
 
 			$stylesheets = $foundry['stylesheet'];
 
-			echo '(function(){';
-			echo 'var stylesheetNames = ' . $this->getNames($stylesheets) . ';';
-			echo 'var state = ($.stylesheet(' . $this->generateStylesheetData($stylesheets, $minify) . '})) ? "resolve" : "reject";';
-			echo '$.each(stylesheetNames, function(i, stylesheet){ $.require.stylesheet.loader(stylesheet)[state](); });'
-			echo '})();'
+			echo '(function(){' . "\n";
+			echo 'var stylesheetNames = ' . $this->getNames($stylesheets) . ';' . "\n";
+			echo 'var state = ($.stylesheet(' . $this->getStylesheetData($stylesheets, $minify) . ')) ? "resolve" : "reject";' . "\n";
+			echo '$.each(stylesheetNames, function(i, stylesheet){ $.require.stylesheet.loader(stylesheet)[state](); });' . "\n";
+			echo '})();' . "\n";
 		}
 
 		// 4. Predefine scripts
@@ -71,7 +71,7 @@ if ($compileMode=='static') {
 
 			$scripts = $foundry['script'];
 
-			echo '$.module(' . $this->getNames($scripts) . ');';
+			echo '$.module(' . $this->getNames($scripts) . ');' . "\n";
 
 			// 5. Scripts
 			echo $this->getData($scripts);

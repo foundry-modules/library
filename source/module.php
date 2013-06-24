@@ -43,6 +43,8 @@ class FoundryModule
 			return $this->data;
 		}
 
+		$adapterMethod = 'get' . ucfirst($this->type);
+
 		$this->data = $this->getAdapter()->$adapterMethod($this->name);
 
 		return $this->data;
