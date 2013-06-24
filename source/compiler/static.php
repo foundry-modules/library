@@ -42,7 +42,7 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
-	echo 'dispatch("Foundry/' . FOUNDRY_VERSION . '").to(function($){' . "\n";
+	echo 'dispatch.to("Foundry/' . FOUNDRY_VERSION . '").at(function($){' . "\n";
 
 	if (!empty($deps['Foundry'])) {
 

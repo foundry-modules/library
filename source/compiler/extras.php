@@ -7,7 +7,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'dispatch("' . $componentName . '").to(function($){' . "\n";
+	echo 'dispatch.to("' . $componentName . '").at(function($){' . "\n";
 
 	// 4. Templates
 	if (!empty($component['template'])) {
