@@ -265,7 +265,7 @@ class FoundryCompiler
 			$state = JFile::write($file . '.js', $uncompressed);
 
 			// Compressed file
-			if (!empty($options->minify) && $option->minify) {
+			if (!empty($options["minify"]) && $options["minify"]) {
 				$compressed = $this->build($mode, $deps, true);
 				$state = JFile::write($file . '.min.js', $compressed);
 			}
