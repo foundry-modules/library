@@ -42,6 +42,8 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
+	echo 'dispatch("Foundry/' . FOUNDRY_VERSION . '").to(function($){' . "\n";
+
 	if (!empty($deps['Foundry'])) {
 
 		$foundry = $deps['Foundry'];
@@ -77,6 +79,8 @@ if ($compileMode=='static') {
 			echo $this->getData($scripts);
 		}
 	}
+
+	echo '});' . "\n";
 }
 
-include('optimized.php');
+include(FOUNDRY_PATH . '/joomla/compiler/' . 'optimized.php');

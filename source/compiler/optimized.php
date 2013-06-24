@@ -7,6 +7,8 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;
 
+	echo 'dispatch("' . $componentName . '").to(function($){' . "\n";
+
 	// 1. Predefine dependencies
 
 	// 1.1 Predefine scripts
@@ -43,7 +45,9 @@ foreach($deps as $componentName => $component) {
 		echo 'var state = ($.stylesheet(' . $this->getStylesheetData($stylesheets) . ')) ? "resolve" : "reject";' . "\n";
 		echo '$.each(stylesheetNames, function(i, stylesheet){ $.require.stylesheet.loader(stylesheet)[state](); });' . "\n";
 		echo '})();' . "\n";
-	}	
+	}
+
+	echo '});' . "\n";
 }
 
 foreach($deps as $componentName => $component) {
@@ -51,9 +55,13 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
+	echo 'dispatch("' . $componentName . '").to(function($){' . "\n";
+
 	// 3. Scripts
 	if (!empty($scripts)) {
 
 		echo $this->getData($scripts);
 	}
+
+	echo '});' . "\n";
 }
