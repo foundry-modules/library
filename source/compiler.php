@@ -268,6 +268,11 @@ class FoundryCompiler
 				$compressed = $this->build($mode, $deps, true);
 				$state = JFile::write($file . '.min.js', $compressed);
 			}
+
+			if ($mode=='extras') {
+				$extras_manifest = $this->build('extras.json', $deps);
+				$state = JFile::write($file . '.json', $extras_manifest);
+			}
 		}
 
 		var_dump($options);
