@@ -13,7 +13,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-define('FOUNDRY_VERSION' , $FOUNDRY_VERSION);
-define('FOUNDRY_PATH'    , JPATH_ROOT . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'foundry' . DIRECTORY_SEPARATOR . FOUNDRY_VERSION);
-define('FOUNDRY_CLASSES' , FOUNDRY_PATH . DIRECTORY_SEPARATOR . 'joomla');
-define('FOUNDRY_LIB'     , FOUNDRY_PATH . DIRECTORY_SEPARATOR . 'libraries');
+define('FOUNDRY_VERSION' , '$FOUNDRY_VERSION');
+define('FOUNDRY_PATH'    , JPATH_ROOT . '/media/foundry/' . FOUNDRY_VERSION);
+define('FOUNDRY_CLASSES' , FOUNDRY_PATH . '/joomla');
+define('FOUNDRY_LIB'     , FOUNDRY_PATH . '/libraries');

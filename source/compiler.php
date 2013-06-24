@@ -46,7 +46,7 @@ class FoundryCompiler
 			$adapterFile = JPATH_ROOT . '/administrator/components/com_' . $adapterName . '/foundry.php';
 
 			// If the adapter file is missing, stop.
-			if (!file_exists($file)) {
+			if (!file_exists($adapterFile)) {
 				return null;
 			}
 
@@ -72,12 +72,12 @@ class FoundryCompiler
 		}
 
 		// Create module type entry
-		if (!array_key_exists($module->type, $this->modules[$module->adapter]) {
+		if (!array_key_exists($module->type, $this->modules[$module->adapter])) {
 			$this->modules[$module->adapter][$module->type] = array();
 		}
 
 		// Create module entry
-		if (!array_key_exists($module->name, $this->modules[$module->adapter][$module->type]) {
+		if (!array_key_exists($module->name, $this->modules[$module->adapter][$module->type])) {
 
 			// Store a reference to the module instance
 			$this->modules[$module->adapter][$module->type][$module->name] = $module;
@@ -91,44 +91,51 @@ class FoundryCompiler
 		return $module;
 	}
 
-	private function getDependencies($manifest, $deps=array())
+	private function getDependencies($manifest, &$deps=array())
 	{
+		if (empty($manifest)) return;
+
 		$manifests = (is_object($manifest)) ? array($manifest) : $manifest;
 
 		foreach($manifests as $manifest) {
 
-			$adapterName = (empty($manifest->adapter)) ? 'default' : $manifest->adapter;
+			$adapterName = (empty($manifest->adapter)) ? 'foundry' : $manifest->adapter;
 			$adapter = $this->getAdapter($adapterName);
 
-			foreach($manifest as $moduleType => $moduleName)
+			foreach($manifest as $moduleType => $moduleNames)
 			{
-				// Create module entry
-				$module = $this->getModule(
-					$moduleName,
-					$moduleType,
-					$adapterName
-				);
+				if ($moduleType=='adapter') continue;
 
-				if (!$module->added) {
+				foreach($moduleNames as $moduleName) {
 
-					// Create an adapter entry
-					if (!array_key_exists($module->adapter, $deps)) {
-						$deps[$module->adapter] = array();
-					}
+					// Create module entry
+					$module = $this->getModule(
+						$moduleName,
+						$moduleType,
+						$adapterName
+					);
 
-					// Add it to the dependency tree
-					if (!array_key_exists($module->type, $deps[$module->adapter])) {
-						$deps[$module->adapter][$module->type][] = array();
-					};
+					if (!$module->added) {
 
-					$deps[$module->type][] = $module;
+						// Create an adapter entry
+						if (!array_key_exists($module->adapter, $deps)) {
+							$deps[$module->adapter] = array();
+						}
 
-					$module->added = true;
+						// Add it to the dependency tree
+						if (!array_key_exists($module->type, $deps[$module->adapter])) {
+							$deps[$module->adapter][$module->type] = array();
+						};
 
-					if ($module->type=='script') {
+						$deps[$module->adapter][$module->type][] = $module;
 
-						// Crawl into module's dependencies
-						$this->getDependencies($module->getManifest(), &$deps)						
+						$module->added = true;
+
+						if ($module->type=='script') {
+
+							// Crawl into module's dependencies
+							$this->getDependencies($module->getManifest(), $deps);						
+						}
 					}
 				}
 			}
@@ -268,6 +275,8 @@ class FoundryCompiler
 
 class FoundryCompiler_Foundry {
 
+	public $name = 'foundry';
+
 	public $path = FOUNDRY_PATH;
 
 	public $compiler = null;
@@ -277,13 +286,21 @@ class FoundryCompiler_Foundry {
 		$this->compiler = $compiler;
 	}
 
-	public function createModule()
+	public function createModule($moduleName, $moduleType, $adapterName)
 	{
+		if (empty($adapterName)) {
+			$adapterName = $this->name;
+		}
+		
 		// Rollback to foundry script when the module type if library
 		if ($moduleType=='library') {
 			$adapterName = 'foundry';
 			$moduleType  = 'script';
 		}
+
+		$module = new FoundryModule($this->compiler, $adapterName, $moduleName, $moduleType);
+
+		return $module;
 	}
 
 	public function getPath($name, $type='script', $extension='')
@@ -302,7 +319,7 @@ class FoundryCompiler_Foundry {
 				break;
 		}
 
-		return $this->path . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $name . $extension;
+		return $this->path . '/' . $folder . '/' . $name . $extension;
 	}
 
 	private function getContent($name, $type='script', $extension='js')

@@ -24,18 +24,17 @@ class FoundryModule
 	private $manifest = null;
 	private $data     = null;
 
-	private $_adapter = null;
-
-	public function __construct($compiler, $moduleName, $moduleType, )
+	public function __construct($compiler, $adapterName, $moduleName, $moduleType)
 	{
-		$this->_adapter = $this->compiler->getAdapter($this->adapter);
+		$this->name     = $moduleName;
+		$this->type     = $moduleType;
+		$this->adapter  = $adapterName;
+		$this->compiler = $compiler;
+	}
 
-		$module->name     = $moduleName;
-		$module->type     = $moduleType;
-		$module->adapter  = $adapterName;
-		$module->compiler = $this;		
+	private function getAdapter() {
 
-		$adapter->initModule($module);
+		return $this->compiler->getAdapter($this->adapter);
 	}
 
 	public function getData() {
@@ -44,18 +43,18 @@ class FoundryModule
 			return $this->data;
 		}
 
-		$this->data = $this->_adapter->$adapterMethod($this->name);
+		$this->data = $this->getAdapter()->$adapterMethod($this->name);
 
 		return $this->data;
 	}
 
 	public function getManifest() {
 
-		if (!empty($this->manifest) {
+		if (!empty($this->manifest)) {
 			return $this->manifest;
 		}
 
-		$this->manifest = $this->_adapter->getManifest($this->name);
+		$this->manifest = $this->getAdapter()->getManifest($this->name);
 
 		return $this->manifest;
 	}

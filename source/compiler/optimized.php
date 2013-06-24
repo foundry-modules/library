@@ -30,7 +30,7 @@ foreach($deps as $componentName => $component) {
 
 		$languages = $component['language'];
 
-		echo '$.require.template.loader(' . $this->getNames($languages) . ');\n'
+		echo '$.require.language.loader(' . $this->getNames($languages) . ');\n'
 	}
 
 	// 2. Stylesheets
