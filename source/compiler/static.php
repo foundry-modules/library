@@ -42,14 +42,14 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
-	if (!empty($deps['foundry'])) {
+	if (!empty($deps['Foundry'])) {
 
-		$foundry = $deps['foundry'];
+		$foundry = $deps['Foundry'];
 
 		// 2. Templates
 		if (!empty($foundry['template'])) {
 
-			$templates = $deps['foundry']['template'];
+			$templates = $deps['Foundry']['template'];
 
 			echo '$.require.template.loader(' . $this->getJSONData($templates) . ');' . "\n";
 		}

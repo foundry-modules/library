@@ -30,7 +30,7 @@ class FoundryCompiler
 	{
 	}
 
-	public function getAdapter($adapterName='foundry')
+	public function getAdapter($adapterName='Foundry')
 	{
 		// If the adapter has been loaded, just return it.
 		if (!empty($this->adapters[$adapterName])) {
@@ -38,12 +38,12 @@ class FoundryCompiler
 		}
 
 		// Try to get the adapter class
-		$adapterClass = 'FoundryCompiler_' . ucfirst($adapterName);
+		$adapterClass = 'FoundryCompiler_' . $adapterName;
 
 		if (!class_exists($adapterClass)) {
 
 			// If the adapter class does not exist, try to load it.
-			$adapterFile = JPATH_ROOT . '/administrator/components/com_' . $adapterName . '/foundry.php';
+			$adapterFile = JPATH_ROOT . '/administrator/components/com_' . strtolower($adapterName) . '/foundry.php';
 
 			// If the adapter file is missing, stop.
 			if (!file_exists($adapterFile)) {
@@ -59,7 +59,7 @@ class FoundryCompiler
 		return $this->adapters[$adapterName];
 	}
 
-	public function getModule($moduleName, $moduleType='script', $adapterName='foundry')
+	public function getModule($moduleName, $moduleType='script', $adapterName='Foundry')
 	{
 		$adapter = $this->getAdapter($adapterName);
 
@@ -99,7 +99,7 @@ class FoundryCompiler
 
 		foreach($manifests as $manifest) {
 
-			$adapterName = (empty($manifest->adapter)) ? 'foundry' : $manifest->adapter;
+			$adapterName = (empty($manifest->adapter)) ? 'Foundry' : $manifest->adapter;
 			$adapter = $this->getAdapter($adapterName);
 
 			foreach($manifest as $moduleType => $moduleNames)
@@ -261,7 +261,6 @@ class FoundryCompiler
 
 			// Uncompressed file
 			$uncompressed = $this->build($mode, $deps);
-
 			$state = JFile::write($file . '.js', $uncompressed);
 
 			// Compressed file
@@ -288,7 +287,7 @@ class FoundryCompiler
 
 class FoundryCompiler_Foundry {
 
-	public $name = 'foundry';
+	public $name = 'Foundry';
 
 	public $path = FOUNDRY_PATH;
 
@@ -307,7 +306,7 @@ class FoundryCompiler_Foundry {
 		
 		// Rollback to foundry script when the module type if library
 		if ($moduleType=='library') {
-			$adapterName = 'foundry';
+			$adapterName = 'Foundry';
 			$moduleType  = 'script';
 		}
 

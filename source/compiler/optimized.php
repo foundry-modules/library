@@ -5,7 +5,7 @@ defined( '_JEXEC' ) or die( 'Unauthorized Access' );
 foreach($deps as $componentName => $component) {
 
 	// Skip foundry
-	if ($componentName=='foundry') continue;
+	if ($componentName=='Foundry') continue;
 
 	// 1. Predefine dependencies
 
@@ -49,7 +49,7 @@ foreach($deps as $componentName => $component) {
 foreach($deps as $componentName => $component) {
 
 	// Skip foundry
-	if ($componentName=='foundry') continue;	
+	if ($componentName=='Foundry') continue;	
 
 	// 3. Scripts
 	if (!empty($scripts)) {

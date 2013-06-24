@@ -5,7 +5,7 @@ defined( '_JEXEC' ) or die( 'Unauthorized Access' );
 foreach($deps as $componentName => $component) {
 
 	// Skip foundry
-	if ($componentName=='foundry') continue;	
+	if ($componentName=='Foundry') continue;	
 
 	// 4. Templates
 	if (!empty($component['template'])) {
