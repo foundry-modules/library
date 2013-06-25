@@ -7,7 +7,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'dispatch.to("' . $componentName . '").at(function($){' . "\n";
+	echo 'dispatch("' . $componentName . ' Extras").containing(function($){' . "\n";
 
 	// 4. Templates
 	if (!empty($component['template'])) {
@@ -33,5 +33,5 @@ foreach($deps as $componentName => $component) {
 		echo '$.require.language.loader(' . $this->getJSONData($languages) . ');' . "\n";
 	}
 
-	echo '});' . "\n";
+	echo '}).to("' . $componentName . '");' . "\n";
 }

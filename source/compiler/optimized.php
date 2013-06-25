@@ -9,7 +9,7 @@ foreach($deps as $componentName => $component) {
 
 	echo 'window["' . $componentName . '"] = abstractComponent();' . "\n";
 
-	echo 'dispatch.to("' . $componentName . '").at(function($){' . "\n";
+	echo 'dispatch("' . $componentName . ' Definitions").containing(function($){' . "\n";
 
 	// 1. Predefine dependencies
 
@@ -29,7 +29,15 @@ foreach($deps as $componentName => $component) {
 		echo '$.require.template.loader(' . $this->getNames($templates) . ');' . "\n";
 	}
 
-	// 1.3 Predefine languages
+	// 1.3 Predefine views
+	if (!empty($component['view'])) {
+
+		$views = $component['view'];
+
+		echo '$.require.template.loader(' . $this->getNames($views) . ');' . "\n";
+	}
+
+	// 1.4 Predefine languages
 	if (!empty($component['language'])) {
 
 		$languages = $component['language'];
@@ -49,7 +57,7 @@ foreach($deps as $componentName => $component) {
 		echo '})();' . "\n";
 	}
 
-	echo '});' . "\n";
+	echo '}).to("' . $componentName . '");' . "\n";
 }
 
 foreach($deps as $componentName => $component) {
@@ -57,7 +65,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'dispatch.to("' . $componentName . '").at(function($){' . "\n";
+	echo 'dispatch("' . $componentName . ' Scripts").containing(function($){' . "\n";
 
 	// 3. Scripts
 	if (!empty($scripts)) {
@@ -65,5 +73,5 @@ foreach($deps as $componentName => $component) {
 		echo $this->getData($scripts);
 	}
 
-	echo '});' . "\n";
+	echo '}).to("' . $componentName . '");' . "\n";
 }
