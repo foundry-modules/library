@@ -19,6 +19,7 @@ if (!$loaded) {
 
 	$app = JFactory::getApplication();
 	$doc = JFactory::getDocument();
+	$jConfig = JFactory::getConfig();
 
 	$foundry_version = "$FOUNDRY_VERSION";
 
@@ -135,6 +136,7 @@ dispatch
 		$.environment   = '<?php echo $foundry_environment; ?>';
 		$.mode          = '<?php echo $foundry_mode; ?>';
 		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
+		$.joomlaDebug   = <?php echo $jConfig->get('debug'); ?>;
 		$.locale = {
 			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
 		};
