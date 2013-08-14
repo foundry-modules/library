@@ -71,6 +71,8 @@ if (!$loaded) {
 		}
 	}
 
+	$scripts = array();
+
 	// Load Foundry scripts in header
 	switch ($foundry_environment) {
 
