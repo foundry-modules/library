@@ -9,7 +9,7 @@ foreach($deps as $componentName => $component) {
 
 	echo 'window["' . $componentName . '"] = abstractComponent();' . "\n";
 
-	echo 'dispatch("' . $componentName . ' Definitions").containing(function($){' . "\n";
+	echo 'Dispatch("' . $componentName . ' Definitions").containing(function($){' . "\n";
 
 	// 1. Predefine dependencies
 
@@ -65,7 +65,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'dispatch("' . $componentName . ' Scripts").containing(function($){' . "\n";
+	echo 'Dispatch("' . $componentName . ' Scripts").containing(function($){' . "\n";
 
 	// 3. Scripts
 	if (!empty($scripts)) {
