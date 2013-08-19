@@ -123,7 +123,7 @@ if (!$loaded) {
 	ob_start();
 ?>
 
-dispatch
+Dispatch
 	.to("$FOUNDRY_NAMESPACE Configuration")
 	.at(function($, manifest) {
 
@@ -144,7 +144,7 @@ dispatch
 		};
 
 		// Make sure core plugins are installed first
-		dispatch("$FOUNDRY_NAMESPACE")
+		Dispatch("$FOUNDRY_NAMESPACE")
 			.containing($)
 			.onlyTo("$FOUNDRY_NAMESPACE Core Plugins");
 	});
