@@ -153,6 +153,6 @@ Dispatch
 	$contents = ob_get_contents();
 	ob_end_clean();
 
-	$doc->addScriptDeclaration($contents);
+	$doc->addCustomTag('<script>' . $contents . '</script>');
 }
 ?>
