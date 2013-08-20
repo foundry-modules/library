@@ -122,15 +122,9 @@ if (!$loaded) {
 
 	ob_start();
 ?>
-
 Dispatch
-	.to("$FOUNDRY_NAMESPACE Configuration")
-	.at(function($, manifest) {
-
-		<?php if ($foundry_environment=="development"): ?>
-		window.F = $;
-		<?php endif; ?>
-
+	.to("Foundry/3.0 Configuration")
+	.at(function($) {
 		$.rootPath      = '<?php echo JURI::root(); ?>';
 		$.indexUrl      = '<?php echo JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php') ?>';
 		$.path          = '<?php echo $foundry_path; ?>';
@@ -143,12 +137,11 @@ Dispatch
 			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
 		};
 
-		// Make sure core plugins are installed first
-		Dispatch("$FOUNDRY_NAMESPACE")
+		Dispatch("Foundry/3.0")
 			.containing($)
-			.onlyTo("$FOUNDRY_NAMESPACE Core Plugins");
+			.onlyTo("Foundry/3.0 Core Plugins");
+		<?php if ($foundry_environment=="development"): ?>window.F = $;<?php endif; ?>
 	});
-
 <?php
 	$contents = ob_get_contents();
 	ob_end_clean();
