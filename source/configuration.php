@@ -123,7 +123,7 @@ class FoundryConfiguration {
 			"mode"          => $this->mode,
 			"path"          => $this->path,
 			"extension"     => $this->extension,
-			"rootPath"      => JURI::root(),
+			"rootPath"      => rtrim(JURI::root(), '/'),
 			"indexUrl"      => JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php'),
 			"joomla"        => array(
 				"version"   => floatval(JVERSION),
@@ -158,7 +158,7 @@ class FoundryConfiguration {
 		// they can load & execute without page blocking.
 		foreach ($this->scripts as $i=>$script) {
 			$scriptPath = $this->path . '/scripts/' . $script . $this->extension;
-			$scriptTag  = '<script' . (($this->defer) ? '' : ' defer') . (($this->async) ? '' : ' async') . ' src="' . $scriptPath . '"></script>';
+			$scriptTag  = '<script' . (($this->defer) ? '' : ' defer="defer"') . (($this->async) ? '' : ' async="async"') . ' src="' . $scriptPath . '"></script>';
 			$document->addCustomTag($scriptTag);
 		}
 
