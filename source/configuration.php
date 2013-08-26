@@ -22,12 +22,18 @@ class FoundryConfiguration {
 	public $source      = 'local';
 	public $mode        = 'compressed';
 	public $path        = FOUNDRY_URI;
-	public $extension   = '.min.js';
+	private $extension  = '.min.js';
+
+	private $scripts    = array();
 	public $async       = false;
-	public $defer       = false;
-	public $scripts     = array();
+	public $defer       = false;	
 
 	public function __construct()
+	{
+		$this->update();
+	}
+
+	private function update()
 	{
 		// Allow url overrides
 		$this->environment = JRequest::getString('fd_env' , $this->environment, 'GET');
@@ -42,6 +48,7 @@ class FoundryConfiguration {
 				break;
 
 			case 'optimized':
+			default:
 				$this->async = true;
 				$this->defer = true;			
 				// Loads a single "foundry.js"
@@ -76,6 +83,7 @@ class FoundryConfiguration {
 		}
 
 		switch ($this->source) {
+
 			case 'remote':
 				// Note: Foundry CDN is not working yet.
 				$this->path = FOUNDRY_CDN;
@@ -83,8 +91,15 @@ class FoundryConfiguration {
 		}
 
 		switch($this->mode) {
-			case 'uncompressed':
+			
+			case 'compressed':
+			default:
 				$this->extension = '.min.js';
+				break;
+
+			case 'uncompressed':
+				$this->extension = '.js';
+				break;
 		}
 	}
 
@@ -95,10 +110,12 @@ class FoundryConfiguration {
 
 	public function toArray()
 	{
-		$app = JFactory::getApplication();
+		$this->update();
+
+		$app    = JFactory::getApplication();
 		$config = JFactory::getConfig();
 
-		$config = array(
+		$data = array(
 			"environment"   => $this->environment,
 			"source"        => $this->source,
 			"mode"          => $this->mode,
@@ -115,7 +132,7 @@ class FoundryConfiguration {
 			)
 		);
 
-		return $config;
+		return $data;
 	}
 
 	public function toJSON()
@@ -191,9 +208,14 @@ class FoundryConfiguration {
 
 	public function export()
 	{
+		$this->update();
+
 		ob_start();
+
 		include(FOUNDRY_CLASSES . '/configuration/config.php');
+		
 		$contents = ob_get_contents();
+
 		ob_end_clean();
 
 		return $contents;
