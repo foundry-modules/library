@@ -15,5 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 
 define('FOUNDRY_VERSION' , '$FOUNDRY_VERSION');
 define('FOUNDRY_PATH'    , JPATH_ROOT . '/media/foundry/' . FOUNDRY_VERSION);
+define('FOUNDRY_URI'     , rtrim(JURI::root(), '/') . '/media/foundry/' . FOUNDRY_VERSION);
+define('FOUNDRY_CDN'     , 'http://foundry.stackideas.com/' .  FOUNDRY_VERSION);
 define('FOUNDRY_CLASSES' , FOUNDRY_PATH . '/joomla');
 define('FOUNDRY_LIB'     , FOUNDRY_PATH . '/libraries');
