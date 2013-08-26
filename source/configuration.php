@@ -125,7 +125,7 @@ class FoundryConfiguration {
 		return $json->encode($config);
 	}
 
-	public function loadScripts()
+	public function attach()
 	{
 		static $loaded = false;
 
@@ -134,7 +134,7 @@ class FoundryConfiguration {
 		$document = JFactory::getDocument();
 
 		// Load configuration script first
-		$script = $this->loadConfigScript();
+		$script = $this->load();
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -148,17 +148,17 @@ class FoundryConfiguration {
 		$loaded = true;
 	}
 
-	public function loadConfigScript()
+	public function load()
 	{
 		$document = JFactory::getDocument();
 
 		// This is cached so it doesn't always write to file.
-		$script = $this->writeConfigScript();
+		$script = $this->write();
 
 		// If unable to write to file, e.g. file permissions issue.
 		// Just dump the entire script on the head.
 		if ($script->failed) {
-			$contents = $this->getConfigScript();
+			$contents = $this->export();
 			$document->addCustomTag('<script>' . $contents . '</script>');
 		} else {
 			// Add to the very top of document head.
@@ -166,20 +166,20 @@ class FoundryConfiguration {
 		}
 	}
 
-	public function writeConfigScript()
+	public function write()
 	{
 		$id = $this->id();
 
 		$script = array(
 			"id"     => $id,
-			"file"   => FOUNDRY_PATH . '/scripts/init/' . $id . '.js',
-			"url"    => FOUNDRY_URI  . '/scripts/init/' . $id . '.js',
+			"file"   => FOUNDRY_PATH . '/config/' . $id . '.js',
+			"url"    => FOUNDRY_URI  . '/config/' . $id . '.js',
 			"failed" => false
 		);
 
 		if (!JFile::exists($script->file)) {
 
-			$contents = $this->getConfigScript();
+			$contents = $this->export();
 
 			if (!JFile::write($script->file, $contents)) {
 				$script->failed = true;
@@ -189,13 +189,19 @@ class FoundryConfiguration {
 		return $script;
 	}
 
-	public function getConfigScript()
+	public function export()
 	{
 		ob_start();
-		include(FOUNDRY_PATH . 'scripts/init.php');
+		include(FOUNDRY_CLASSES . '/configuration/config.php');
 		$contents = ob_get_contents();
 		ob_end_clean();
 
 		return $contents;
+	}
+
+	public function purge()
+	{
+		// TODO: Remove existing scripts in FOUNDRY_PATH . '/config'?
+		// Delete folder? Recreate folder?
 	}
 }
