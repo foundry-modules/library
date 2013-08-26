@@ -13,12 +13,12 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-include(FOUNDRY_PATH . '/scripts/dispatch'          . $config->extension);
-include(FOUNDRY_PATH . '/scripts/abstractComponent' . $config->extension);
+include(FOUNDRY_PATH . '/scripts/dispatch'          . $this->extension);
+include(FOUNDRY_PATH . '/scripts/abstractComponent' . $this->extension);
 ?>
 
 Dispatch
 	.to("Foundry/$FOUNDRY_VERSION Configuration")
 	.at(function($) {
-		$.initialize("<?php echo $config->toJSON(); ?>");
+		$.initialize(<?php echo $this->toJSON(); ?>);
 	});

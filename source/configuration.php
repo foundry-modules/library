@@ -18,7 +18,9 @@ require_once(FOUNDRY_LIB . '/json.php');
 
 class FoundryConfiguration {
 
-	public $environment = 'optimized',
+	static $attached = false;
+
+	public $environment = 'optimized';
 	public $source      = 'local';
 	public $mode        = 'compressed';
 	public $path        = FOUNDRY_URI;
@@ -126,7 +128,7 @@ class FoundryConfiguration {
 			"joomla"        => array(
 				"version"   => floatval(JVERSION),
 				"debug"     => $config->get('debug')
-			)
+			),
 			"locale"        => array(
 				"lang"      => JFactory::getLanguage()->getTag()
 			)
@@ -144,9 +146,7 @@ class FoundryConfiguration {
 
 	public function attach()
 	{
-		static $loaded = false;
-
-		if ($loaded) return;
+		if (self::$attached) return;
 
 		$document = JFactory::getDocument();
 
@@ -162,7 +162,7 @@ class FoundryConfiguration {
 			$document->addCustomTag($scriptTag);
 		}
 
-		$loaded = true;
+		self::$attached = true;
 	}
 
 	public function load()
@@ -187,12 +187,11 @@ class FoundryConfiguration {
 	{
 		$id = $this->id();
 
-		$script = array(
-			"id"     => $id,
-			"file"   => FOUNDRY_PATH . '/config/' . $id . '.js',
-			"url"    => FOUNDRY_URI  . '/config/' . $id . '.js',
-			"failed" => false
-		);
+		$script = new stdClass();
+		$script->id     = $this->id();
+		$script->file   = FOUNDRY_PATH . '/config/' . $script->id . '.js';
+		$script->url    = FOUNDRY_URI  . '/config/' . $script->id . '.js';
+		$script->failed = false;
 
 		if (!JFile::exists($script->file)) {
 
