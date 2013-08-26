@@ -18,7 +18,7 @@ include(FOUNDRY_PATH . '/scripts/abstractComponent' . $config->extension);
 ?>
 
 Dispatch
-	.to("Foundry/3.0 Configuration")
+	.to("Foundry/$FOUNDRY_VERSION Configuration")
 	.at(function($) {
 		$.initialize("<?php echo $config->toJSON(); ?>");
 	});
