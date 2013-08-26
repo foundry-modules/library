@@ -13,139 +13,189 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-static $loaded	= false;
+require_once('constants.php');
+require_once(FOUNDRY_LIB . '/json.php');
 
-if (!$loaded) {
+class FoundryConfiguration {
 
-	$app = JFactory::getApplication();
-	$doc = JFactory::getDocument();
-	$jConfig = JFactory::getConfig();
+	public $environment = 'optimized',
+	public $source      = 'local';
+	public $mode        = 'compressed';
+	public $path        = FOUNDRY_URI;
+	public $extension   = '.min.js';
+	public $async       = false;
+	public $defer       = false;
+	public $scripts     = array();
 
-	$foundry_version = "$FOUNDRY_VERSION";
+	public function __construct()
+	{
+		// Allow url overrides
+		$this->environment = JRequest::getString('fd_env' , $this->environment, 'GET');
+		$this->source      = JRequest::getString('fd_src' , $this->source     , 'GET');
+		$this->mode        = JRequest::getString('fd_mode', $this->mode       , 'GET');
+	
+		switch ($this->environment) {
 
+			case 'static':
+				// Does not load anything as foundry.js
+				// is included within component script file.
+				break;
 
-	// FOUNDRY ENVIRONMENT ---------------------------------------//
-	// If no foundry_environment is set, default to optimized.
-	if (empty($foundry_environment)) {
-		$foundry_environment = 'optimized';
-	}
+			case 'optimized':
+				$this->async = true;
+				$this->defer = true;			
+				// Loads a single "foundry.js"
+				// containing all core foundry files.
+				$this->scripts = array(
+					'foundry'
+				);
+				break;
 
-	// Allow foundry_environment to be overriden via url
-	$foundry_environment = JRequest::getString('fd_env', $foundry_environment, 'GET');
+			case 'development':
+				// Load core foundry files separately.
+				$this->scripts = array(
+					'jquery',
+					'lodash',
+					'bootstrap',
+					'responsive',
+					'utils',
+					'uri',
+					'mvc',
+					'joomla',
+					'module',
+					'script',
+					'stylesheet',
+					'language',
+					'template',
+					'require',
+					'iframe-transport',
+					'server',
+					'component'
+				);
+				break;
+		}
 
-
-	// FOUNDRY SOURCE -------------------------------------------//
-	// If no foundry_source is set, default to local.
-	// Component should explicitly set this to remote when
-	// running under static mode.
-	if (empty($foundry_source)) {
-		$foundry_source = 'local';
-	}
-
-	// Allow foundry_source to be overriden via url
-	$foundry_source = JRequest::getString('fd_src', $foundry_source, 'GET');
-
-
-	// FOUNDRY MODE ---------------------------------------------//
-	// If no foundry_mode is set, default to compressed.
-	if (empty($foundry_mode)) {
-		$foundry_mode = 'compressed';
-	}
-
-	// Allow foundry_source to be overriden via url
-	$foundry_mode = JRequest::getString('fd_mode', $foundry_mode, 'GET');	
-
-	// FOUNDRY PATH ---------------------------------------------//
-	// If no foundry_path is set, default to local or remote.
-	if (empty($foundry_path)) {
-
-		switch ($foundry_source) {
+		switch ($this->source) {
 			case 'remote':
-				// TODO: Set up Foundry CDN server.
-				$foundry_path = '';
+				// Note: Foundry CDN is not working yet.
+				$this->path = FOUNDRY_CDN;
 				break;
+		}
 
-			case 'local':
-				$foundry_path = rtrim(JURI::root(), '/') . '/media/foundry/' . $foundry_version . '/';
-				break;
+		switch($this->mode) {
+			case 'uncompressed':
+				$this->extension = '.min.js';
 		}
 	}
 
-	$scripts = array();
-
-	// Load Foundry scripts in header
-	switch ($foundry_environment) {
-
-		case 'static':
-			// Does not load anything as foundry.js
-			// is included within component script file.
-			$scripts = array();
-			break;
-
-		case 'optimized':
-			// Loads a single "foundry.js"
-			// containing all core foundry files.
-			$scripts = array(
-				'foundry'
-			);
-			break;
-
-		case 'development':
-			// Load core foundry files separately.
-			$scripts = array(
-				'dispatch',
-				'abstractComponent',
-				'jquery',
-				'lodash',
-				'bootstrap',
-				'responsive',
-				'utils',
-				'uri',
-				'mvc',
-				'joomla',
-				'module',
-				'script',
-				'stylesheet',
-				'language',
-				'template',
-				'require',
-				'iframe-transport',
-				'server',
-				'component'
-			);
-			break;
+	public function id()
+	{
+		return md5(serialize($this->toArray()));
 	}
 
-	foreach ($scripts as $i=>$script) {
-		$doc->addScript($foundry_path . 'scripts/' . $script . (($foundry_mode=='uncompressed') ? '.js' : '.min.js'));
+	public function toArray()
+	{
+		$app = JFactory::getApplication();
+		$config = JFactory::getConfig();
+
+		$config = array(
+			"environment"   => $this->environment,
+			"source"        => $this->source,
+			"mode"          => $this->mode,
+			"path"          => $this->path,
+			"extension"     => $this->extension,
+			"rootPath"      => JURI::root(),
+			"indexUrl"      => JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php'),
+			"joomla"        => array(
+				"version"   => floatval(JVERSION),
+				"debug"     => $config->get('debug')
+			)
+			"locale"        => array(
+				"lang"      => JFactory::getLanguage()->getTag()
+			)
+		);
+
+		return $config;
 	}
 
-	ob_start();
-?>
-Dispatch
-	.to("Foundry/3.0 Configuration")
-	.at(function($) {
-		$.rootPath      = '<?php echo JURI::root(); ?>';
-		$.indexUrl      = '<?php echo JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php') ?>';
-		$.path          = '<?php echo $foundry_path; ?>';
-		$.source        = '<?php echo $foundry_source; ?>';
-		$.environment   = '<?php echo $foundry_environment; ?>';
-		$.mode          = '<?php echo $foundry_mode; ?>';
-		$.joomlaVersion = <?php echo floatval(JVERSION); ?>;
-		$.joomlaDebug   = <?php echo $jConfig->get('debug'); ?>;
-		$.locale = {
-			lang: '<?php echo JFactory::getLanguage()->getTag(); ?>'
-		};
+	public function toJSON()
+	{
+		$json = new Services_JSON();
+		$config = $this->toArray();
+		return $json->encode($config);
+	}
 
-		Dispatch("Foundry/3.0")
-			.containing($)
-			.onlyTo("Foundry/3.0 Core Plugins");
-		<?php if ($foundry_environment=="development"): ?>window.F = $;<?php endif; ?>
-	});
-<?php
-	$contents = ob_get_contents();
-	ob_end_clean();
+	public function loadScripts()
+	{
+		static $loaded = false;
 
-	$doc->addCustomTag('<script>' . $contents . '</script>');
+		if ($loaded) return;
+
+		$document = JFactory::getDocument();
+
+		// Load configuration script first
+		$script = $this->loadConfigScript();
+
+		// Additional scripts uses addCustomTag because
+		// we want to fill in defer & async attribute so
+		// they can load & execute without page blocking.
+		foreach ($this->scripts as $i=>$script) {
+			$scriptPath = $this->path . '/scripts/' . $script . $this->extension;
+			$scriptTag  = '<script' . (($this->defer) ? '' : ' defer') . (($this->async) ? '' : ' async') . ' src="' . $scriptPath . '"></script>';
+			$document->addCustomTag($scriptTag);
+		}
+
+		$loaded = true;
+	}
+
+	public function loadConfigScript()
+	{
+		$document = JFactory::getDocument();
+
+		// This is cached so it doesn't always write to file.
+		$script = $this->writeConfigScript();
+
+		// If unable to write to file, e.g. file permissions issue.
+		// Just dump the entire script on the head.
+		if ($script->failed) {
+			$contents = $this->getConfigScript();
+			$document->addCustomTag('<script>' . $contents . '</script>');
+		} else {
+			// Add to the very top of document head.
+			$document->addScript($script->url);
+		}
+	}
+
+	public function writeConfigScript()
+	{
+		$id = $this->id();
+
+		$script = array(
+			"id"     => $id,
+			"file"   => FOUNDRY_PATH . '/scripts/init/' . $id . '.js',
+			"url"    => FOUNDRY_URI  . '/scripts/init/' . $id . '.js',
+			"failed" => false
+		);
+
+		if (!JFile::exists($script->file)) {
+
+			$contents = $this->getConfigScript();
+
+			if (!JFile::write($script->file, $contents)) {
+				$script->failed = true;
+			}
+		}
+
+		return $script;
+	}
+
+	public function getConfigScript()
+	{
+		ob_start();
+		include(FOUNDRY_PATH . 'scripts/init.php');
+		$contents = ob_get_contents();
+		ob_end_clean();
+
+		return $contents;
+	}
 }
-?>
