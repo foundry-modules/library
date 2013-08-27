@@ -23,7 +23,8 @@ class FoundryBaseConfiguration {
 	public $fullName;
 	public $shortName;
 	public $path;
-	public $uri;	
+	public $uri;
+	public $file;
 
 	public $environment = 'static';
 	public $source      = 'local';
@@ -149,8 +150,16 @@ class FoundryBaseConfiguration {
 
 	public function purge()
 	{
-		// TODO: Remove existing scripts in SOCIAL_MEDIA . '/config'?
-		// Delete folder? Recreate folder?
+		$this->update();
+
+        $files = JFolder::files($this->path . '/config/', '.', true, true);
+
+		foreach($files as $file) {
+
+			$state = JFile::delete( $file );
+		}
+
+		return true;
 	}
 }
 
@@ -237,6 +246,13 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 
 		// And lastly an ajax token ;)
 		$document->addCustomTag('<script>' . $this->fullName . '.token = "' . $this->token . '";</script>');
+	}
+
+	public function purge()
+	{
+		$this->foundry->purge();
+
+		return parent::purge();
 	}
 }
 
