@@ -16,31 +16,267 @@ defined('_JEXEC') or die('Restricted access');
 require_once('constants.php');
 require_once(FOUNDRY_LIB . '/json.php');
 
-class FoundryConfiguration {
+class FoundryBaseConfiguration {
 
 	static $attached = false;
+	static $instance = null;	
 
-	public $environment = 'optimized';
+	public $fullName;
+	public $shortName;
+
+	public $environment = 'static';
 	public $source      = 'local';
 	public $mode        = 'compressed';
-	public $path        = FOUNDRY_URI;
-	private $extension  = '.min.js';
+	public $async       = true;
+	public $defer       = true;
 
+	private $extension  = '.min.js';
 	private $scripts    = array();
-	public $async       = false;
-	public $defer       = false;	
+
+	private $path;
+	private $uri;
 
 	public function __construct()
 	{
 		$this->update();
+	}	
+
+	public static function getInstance()
+	{
+		if( is_null( self::$instance ) )
+		{
+			self::$instance	= new self();
+		}
+
+		return self::$instance;
 	}
 
 	private function update()
 	{
 		// Allow url overrides
-		$this->environment = JRequest::getString('fd_env' , $this->environment, 'GET');
-		$this->source      = JRequest::getString('fd_src' , $this->source     , 'GET');
-		$this->mode        = JRequest::getString('fd_mode', $this->mode       , 'GET');
+		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
+		$this->mode        = JRequest::getString($this->shortName . '_mode', $this->mode       , 'GET');
+
+		switch($this->mode) {
+
+			case 'compressed':
+			default:
+				$this->extension = '.min.js';
+				break;
+
+			case 'uncompressed':
+				$this->extension = '.js';
+				break;
+		}
+	}
+
+	public function id()
+	{
+		return md5(serialize($this->toArray()));
+	}
+
+	public function toArray()
+	{
+		return array();
+	}
+
+	public function toJSON()
+	{
+		$json = new Services_JSON();
+		$config = $this->toArray();
+		return $json->encode($config);
+	}
+
+	public function attach()
+	{
+		if (self::$attached) return;
+
+		$document = JFactory::getDocument();
+
+		// Load configuration script first
+		$script = $this->load();
+
+		// Additional scripts uses addCustomTag because
+		// we want to fill in defer & async attribute so
+		// they can load & execute without page blocking.
+		foreach ($this->scripts as $i=>$script) {
+			$scriptPath = $this->uri . '/scripts/' . $script . $this->extension;
+			$scriptTag  = '<script' . (($this->defer) ? ' defer' : '') . (($this->async) ? ' async' : '') . ' src="' . $scriptPath . '"></script>';
+			$document->addCustomTag($scriptTag);
+		}
+
+		self::$attached = true;
+	}
+
+	public function load()
+	{
+		$document = JFactory::getDocument();
+
+		// This is cached so it doesn't always write to file.
+		$script = $this->write();
+
+		// If unable to write to file, e.g. file permissions issue.
+		// Just dump the entire script on the head.
+		if ($script->failed) {
+			$contents = $this->export();
+			$document->addCustomTag('<script>' . $contents . '</script>');
+		} else {
+			// Add to the very top of document head.
+			$document->addScript($script->url);
+		}
+
+		return $script;
+	}	
+
+	public function write()
+	{
+		$script = new stdClass();
+		$script->id     = $this->id();
+		$script->file   = $this->path . '/config/' . $script->id . '.js';
+		$script->url    = $this->uri  . '/config/' . $script->id . '.js';
+		$script->failed = false;
+
+		if (!JFile::exists($script->file)) {
+
+			$contents = $this->export();
+
+			if (!JFile::write($script->file, $contents)) {
+				$script->failed = true;
+			}
+		}
+
+		return $script;
+	}
+
+	public function export()
+	{
+		$this->update();
+
+		ob_start();
+
+		include($this->file);
+
+		$contents = ob_get_contents();
+
+		ob_end_clean();
+
+		return $contents;
+	}
+
+	public function purge()
+	{
+		// TODO: Remove existing scripts in SOCIAL_MEDIA . '/config'?
+		// Delete folder? Recreate folder?
+	}
+}
+
+class FoundryComponentConfiguration extends FoundryBaseConfiguration {
+
+	public $foundry;
+	
+	public $componentName;
+	public $baseUrl;
+	public $version;
+	public $token;
+	
+	public function __construct()
+	{
+		$this->foundry = new FoundryConfiguration();
+
+		$this->componentName = 'com_' . strtolower($this->fullName);
+		$this->path = FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
+		$this->uri  = FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
+
+		$this->file = $this->path . '/config.php';
+
+		parent::construct();
+	}
+
+	private function update()
+	{
+		parent::update();
+
+		// Automatically reflect environment & mode settings on Foundry
+		// unless it is explicitly overriden via url.
+		$this->foundry->environment = $this->environment;
+		$this->foundry->mode        = $this->mode;
+
+		// @TODO: Automatically switch to remote source when
+		// under static mode + full Foundry is not installed.
+		if ($this->environment=="static") {
+			// $this->foundry->source = 'remote';
+		}
+
+		// @TODO: Switch environment back to static if full foundry doesn't exists.	
+	}	
+
+	public function toArray()
+	{
+		$this->update();
+
+		$data = array(
+			"environment"   => $this->environment,
+			"source"        => $this->source,
+			"mode"          => $this->mode,
+			"baseUrl"       => $this->baseUrl;
+			"version"       => $this->version;
+		);
+
+		return $data;
+	}
+
+	public function export()
+	{
+		$data = "";
+
+		// Include Foundry configuration
+	    // if we're running under static mode
+		if ($this->environment=='static') {
+			$data .= $this->foundry->export();
+		}		
+
+		$data .= parent::export();
+
+		return $data;
+	}
+
+	public function attach()
+	{
+		if (self::$attached) return;
+
+		// Load Foundry configuration if we're not under static mode
+		if ($this->environment!=='static') {
+			$this->foundry->attach();
+		}
+
+		parent::attach();
+
+		// And lastly an ajax token ;)
+		$document->addCustomTag('<script>' . $this->fullName . '.token = "' . $this->token . '";</script>');
+	}
+}
+
+class FoundryConfiguration extends FoundryBaseConfiguration {
+
+	public function __construct()
+	{
+		$this->fullName    = "EasySocial";
+		$this->shortName   = "es";
+
+		$this->environment = 'optimized';
+		$this->path = FOUNDRY_PATH;
+		$this->uri  = FOUNDRY_URI;
+		$this->file = FOUNDRY_CLASSES . '/configuration/config.php';
+		
+		parent::construct();
+	}
+
+	private function update()
+	{
+		parent::update();
+
+		// Allow url overrides
+		$this->mode = JRequest::getString('fd_mode', $this->mode, 'GET');
 	
 		switch ($this->environment) {
 
@@ -88,26 +324,9 @@ class FoundryConfiguration {
 
 			case 'remote':
 				// Note: Foundry CDN is not working yet.
-				$this->path = FOUNDRY_CDN;
+				$this->uri = FOUNDRY_CDN;
 				break;
 		}
-
-		switch($this->mode) {
-			
-			case 'compressed':
-			default:
-				$this->extension = '.min.js';
-				break;
-
-			case 'uncompressed':
-				$this->extension = '.js';
-				break;
-		}
-	}
-
-	public function id()
-	{
-		return md5(serialize($this->toArray()));
 	}
 
 	public function toArray()
@@ -121,7 +340,7 @@ class FoundryConfiguration {
 			"environment"   => $this->environment,
 			"source"        => $this->source,
 			"mode"          => $this->mode,
-			"path"          => $this->path,
+			"path"          => $this->uri,
 			"extension"     => $this->extension,
 			"rootPath"      => rtrim(JURI::root(), '/'),
 			"indexUrl"      => JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php'),
@@ -135,94 +354,5 @@ class FoundryConfiguration {
 		);
 
 		return $data;
-	}
-
-	public function toJSON()
-	{
-		$json = new Services_JSON();
-		$config = $this->toArray();
-		return $json->encode($config);
-	}
-
-	public function attach()
-	{
-		if (self::$attached) return;
-
-		$document = JFactory::getDocument();
-
-		// Load configuration script first
-		$script = $this->load();
-
-		// Additional scripts uses addCustomTag because
-		// we want to fill in defer & async attribute so
-		// they can load & execute without page blocking.
-		foreach ($this->scripts as $i=>$script) {
-			$scriptPath = $this->path . '/scripts/' . $script . $this->extension;
-			$scriptTag  = '<script' . (($this->defer) ? ' defer' : '') . (($this->async) ? ' async' : '') . ' src="' . $scriptPath . '"></script>';
-			$document->addCustomTag($scriptTag);
-		}
-
-		self::$attached = true;
-	}
-
-	public function load()
-	{
-		$document = JFactory::getDocument();
-
-		// This is cached so it doesn't always write to file.
-		$script = $this->write();
-
-		// If unable to write to file, e.g. file permissions issue.
-		// Just dump the entire script on the head.
-		if ($script->failed) {
-			$contents = $this->export();
-			$document->addCustomTag('<script>' . $contents . '</script>');
-		} else {
-			// Add to the very top of document head.
-			$document->addScript($script->url);
-		}
-	}
-
-	public function write()
-	{
-		$id = $this->id();
-
-		$script = new stdClass();
-		$script->id     = $this->id();
-		$script->file   = FOUNDRY_PATH . '/config/' . $script->id . '.js';
-		$script->url    = FOUNDRY_URI  . '/config/' . $script->id . '.js';
-		$script->failed = false;
-
-		if (!JFile::exists($script->file)) {
-
-			$contents = $this->export();
-
-			if (!JFile::write($script->file, $contents)) {
-				$script->failed = true;
-			}
-		}
-
-		return $script;
-	}
-
-	public function export()
-	{
-		$this->update();
-
-		ob_start();
-
-		include(FOUNDRY_CLASSES . '/configuration/config.php');
-		
-		$contents = ob_get_contents();
-
-		ob_end_clean();
-
-		return $contents;
-	}
-
-	public function purge()
-	{
-		// TODO: Remove existing scripts in FOUNDRY_PATH . '/config'?
-		// Delete folder? Recreate folder?
 	}
 }

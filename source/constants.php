@@ -13,8 +13,13 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+define('FOUNDRY_JOOMLA_PATH', JPATH_ROOT);
+define('FOUNDRY_JOOMLA_URI' , rtrim( JURI::root(), '/')) ;
+define('FOUNDRY_MEDIA_PATH' , FOUNDRY_JOOMLA_PATH . '/media');
+define('FOUNDRY_MEDIA_URI'  , FOUNDRY_JOOMLA_URI . '/media');
+
 define('FOUNDRY_VERSION' , '$FOUNDRY_VERSION');
-define('FOUNDRY_PATH'    , JPATH_ROOT . '/media/foundry/' . FOUNDRY_VERSION);
+define('FOUNDRY_PATH'    , FOUNDRY_JOOMLA_PATH . '/media/foundry/' . FOUNDRY_VERSION);
 define('FOUNDRY_URI'     , rtrim(JURI::root(), '/') . '/media/foundry/' . FOUNDRY_VERSION);
 define('FOUNDRY_CDN'     , 'http://foundry.stackideas.com/' .  FOUNDRY_VERSION);
 define('FOUNDRY_CLASSES' , FOUNDRY_PATH . '/joomla');
