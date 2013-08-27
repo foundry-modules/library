@@ -360,7 +360,7 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 			"indexUrl"      => JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php'),
 			"joomla"        => array(
 				"version"   => floatval(JVERSION),
-				"debug"     => $config->get('debug')
+				"debug"     => (bool) $config->get('debug')
 			),
 			"locale"        => array(
 				"lang"      => JFactory::getLanguage()->getTag()
