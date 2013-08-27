@@ -19,39 +19,27 @@ require_once(FOUNDRY_LIB . '/json.php');
 class FoundryBaseConfiguration {
 
 	static $attached = false;
-	static $instance = null;	
 
 	public $fullName;
 	public $shortName;
+	public $path;
+	public $uri;	
 
 	public $environment = 'static';
 	public $source      = 'local';
 	public $mode        = 'compressed';
+	public $extension  = '.min.js';
+
+	public $scripts    = array();
 	public $async       = true;
-	public $defer       = true;
-
-	private $extension  = '.min.js';
-	private $scripts    = array();
-
-	private $path;
-	private $uri;
+	public $defer       = true;	
 
 	public function __construct()
 	{
 		$this->update();
 	}	
 
-	public static function getInstance()
-	{
-		if( is_null( self::$instance ) )
-		{
-			self::$instance	= new self();
-		}
-
-		return self::$instance;
-	}
-
-	private function update()
+	public function update()
 	{
 		// Allow url overrides
 		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
@@ -89,8 +77,6 @@ class FoundryBaseConfiguration {
 
 	public function attach()
 	{
-		if (self::$attached) return;
-
 		$document = JFactory::getDocument();
 
 		// Load configuration script first
@@ -104,8 +90,6 @@ class FoundryBaseConfiguration {
 			$scriptTag  = '<script' . (($this->defer) ? ' defer' : '') . (($this->async) ? ' async' : '') . ' src="' . $scriptPath . '"></script>';
 			$document->addCustomTag($scriptTag);
 		}
-
-		self::$attached = true;
 	}
 
 	public function load()
@@ -189,10 +173,10 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 
 		$this->file = $this->path . '/config.php';
 
-		parent::construct();
+		parent::__construct();
 	}
 
-	private function update()
+	public function update()
 	{
 		parent::update();
 
@@ -218,8 +202,8 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 			"environment"   => $this->environment,
 			"source"        => $this->source,
 			"mode"          => $this->mode,
-			"baseUrl"       => $this->baseUrl;
-			"version"       => $this->version;
+			"baseUrl"       => $this->baseUrl,
+			"version"       => $this->version
 		);
 
 		return $data;
@@ -242,7 +226,7 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 
 	public function attach()
 	{
-		if (self::$attached) return;
+		$document = JFactory::getDocument();
 
 		// Load Foundry configuration if we're not under static mode
 		if ($this->environment!=='static') {
@@ -268,10 +252,10 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 		$this->uri  = FOUNDRY_URI;
 		$this->file = FOUNDRY_CLASSES . '/configuration/config.php';
 		
-		parent::construct();
+		parent::__construct();
 	}
 
-	private function update()
+	public function update()
 	{
 		parent::update();
 
@@ -355,4 +339,13 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 
 		return $data;
 	}
+
+	public function attach()
+	{
+		if (self::$attached) return;
+
+		parent::attach();
+		
+		self::$attached = true;		
+	}	
 }
