@@ -67,7 +67,7 @@ class FoundryBaseConfiguration {
 	public function data()
 	{
 		$data = $this->toArray();
-		$data["modified"] = filemtime($this->file);	
+		$data["modified"] = filemtime($this->file);
 
 		return $data;
 	}
@@ -139,7 +139,9 @@ class FoundryBaseConfiguration {
 			}
 
 			// Also write cache data
-			JFile::write($script->data, $this->data());
+			$json = new Services_JSON();
+			$data = $this->data();
+			JFile::write($script->data, $json->encode($data));
 		}
 
 		return $script;
