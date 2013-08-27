@@ -61,7 +61,15 @@ class FoundryBaseConfiguration {
 
 	public function id()
 	{
-		return md5(serialize($this->toArray()));
+		return md5(serialize($this->data()));
+	}
+
+	public function data()
+	{
+		$data = $this->toArray();
+		$data["modified"] = filemtime($this->file);	
+
+		return $data;
 	}
 
 	public function toArray()
@@ -119,6 +127,7 @@ class FoundryBaseConfiguration {
 		$script->id     = $this->id();
 		$script->file   = $this->path . '/config/' . $script->id . '.js';
 		$script->url    = $this->uri  . '/config/' . $script->id . '.js';
+		$script->data   = $this->path . '/config/' . $script->id . '.json';
 		$script->failed = false;
 
 		if (!JFile::exists($script->file)) {
@@ -128,6 +137,9 @@ class FoundryBaseConfiguration {
 			if (!JFile::write($script->file, $contents)) {
 				$script->failed = true;
 			}
+
+			// Also write cache data
+			JFile::write($script->data, $this->data());
 		}
 
 		return $script;
