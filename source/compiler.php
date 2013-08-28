@@ -18,6 +18,7 @@ require_once(FOUNDRY_CLASSES . '/module.php');
 require_once(FOUNDRY_LIB . '/json.php');
 require_once(FOUNDRY_LIB . '/jsmin.php');
 require_once(FOUNDRY_LIB . '/cssmin.php');
+require_once(FOUNDRY_LIB . '/closure.php');
 
 jimport( 'joomla.filesystem.file' );
 
@@ -91,7 +92,7 @@ class FoundryCompiler
 		return $module;
 	}
 
-	private function getDependencies($manifest, &$deps=array())
+	public function getDependencies($manifest, &$deps=array())
 	{
 		if (empty($manifest)) return;
 
@@ -239,7 +240,7 @@ class FoundryCompiler
 		$options['minify']    Boolean to determine whether to minify script.			
 	*/
 
-	public function compile($manifest="", $options)
+	public function compile($manifest="", $options , $output=true)
 	{
 		$manifest = $this->getManifest($manifest);
 
@@ -275,13 +276,19 @@ class FoundryCompiler
 			}
 		}
 
-		var_dump($options);
-		exit;
+		if ($output)
+		{
+			header('Content-type: text/x-json; UTF-8');
+			echo json_encode( $options );
+			exit;
+		}
+
+		return $options;
 	}
 
 	public function minifyJS($contents)
 	{
-		return JSMinPlus::minify($contents);
+		return ClosureCompiler::minify( $contents );
 	}
 
 	public function minifyCSS($contents)
