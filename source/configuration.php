@@ -300,9 +300,7 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 				break;
 
 			case 'optimized':
-			default:
-				$this->async = true;
-				$this->defer = true;			
+			default:			
 				// Loads a single "foundry.js"
 				// containing all core foundry files.
 				$this->scripts = array(
@@ -311,6 +309,8 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 				break;
 
 			case 'development':
+				$this->async = false;
+				$this->defer = false;			
 				// Load core foundry files separately.
 				$this->scripts = array(
 					'jquery',
