@@ -84,6 +84,11 @@ class FoundryBaseConfiguration {
 		return $json->encode($config);
 	}
 
+	public function createScriptTag($path)
+	{
+		return '<script' . (($this->defer) ? ' defer' : '') . (($this->async) ? ' async' : '') . ' src="' . $path . '"></script>';
+	}
+
 	public function attach()
 	{
 		$document = JFactory::getDocument();
@@ -96,7 +101,7 @@ class FoundryBaseConfiguration {
 		// they can load & execute without page blocking.
 		foreach ($this->scripts as $i=>$script) {
 			$scriptPath = $this->uri . '/scripts/' . $script . $this->extension;
-			$scriptTag  = '<script' . (($this->defer) ? ' defer' : '') . (($this->async) ? ' async' : '') . ' src="' . $scriptPath . '"></script>';
+			$scriptTag  = $this->createScriptTag($scriptPath);
 			$document->addCustomTag($scriptTag);
 		}
 	}
