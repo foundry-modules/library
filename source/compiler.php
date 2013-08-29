@@ -240,7 +240,7 @@ class FoundryCompiler
 		$options['minify']    Boolean to determine whether to minify script.			
 	*/
 
-	public function compile($manifest="", $options , $output=true)
+	public function compile($manifest="", $options)
 	{
 		$manifest = $this->getManifest($manifest);
 
@@ -252,7 +252,7 @@ class FoundryCompiler
 		// Build dependencies
 		$deps = $this->getDependencies($manifest);
 
-		$modes = array('static', 'optimized', 'extras');
+		$modes = array('static', 'optimized', 'resources');
 
 		foreach($modes as $mode) {
 
@@ -265,24 +265,19 @@ class FoundryCompiler
 			$state = JFile::write($file . '.js', $uncompressed);
 
 			// Compressed file
-			if (!empty($options["minify"]) && $options["minify"]) {
+			// We don't compress resources script.
+			if (!empty($options["minify"]) && $options["minify"] && $mode!=='resources') {
 				$compressed = $this->build($mode, $deps, true);
 				$state = JFile::write($file . '.min.js', $compressed);
 			}
 
-			if ($mode=='extras') {
-				$extras_manifest = $this->build('extras.json', $deps);
+			// Generate manifest file for resources
+			if ($mode=='resources') {
+				$resources_manifest = $this->build('resources_manifest', $deps);
 				$state = JFile::write($file . '.json', $extras_manifest);
 			}
 		}
-
-		if ($output)
-		{
-			header('Content-type: text/x-json; UTF-8');
-			echo json_encode( $options );
-			exit;
-		}
-
+		
 		return $options;
 	}
 
