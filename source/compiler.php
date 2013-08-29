@@ -236,7 +236,7 @@ class FoundryCompiler
 
 		$options['static']    Path to save static script (without extension). If this field is blank, static script won't be compiled.
 		$options['optimized'] Path to save optimized script (without extension). If this field is blank, optimized script won't be compiled.
-		$options['extras']    Path to save extras script (without extension). If this field is blank, optimized script won't be compiled.
+		$options['resources'] Path to save resources script (without extension). If this field is blank, optimized script won't be compiled.
 		$options['minify']    Boolean to determine whether to minify script.			
 	*/
 
@@ -274,10 +274,10 @@ class FoundryCompiler
 			// Generate manifest file for resources
 			if ($mode=='resources') {
 				$resources_manifest = $this->build('resources_manifest', $deps);
-				$state = JFile::write($file . '.json', $extras_manifest);
+				$state = JFile::write($file . '.json', $resources_manifest);
 			}
 		}
-		
+
 		return $options;
 	}
 
