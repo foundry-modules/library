@@ -22,7 +22,14 @@ foreach($deps as $componentName => $component) {
 		$modules = $component[$type];
 
 		foreach ($modules as $module) {
-			$_deps[$type][] = $module->name;
+
+			$name = $module->name;
+
+ 			if ($type=="view") {
+				$name = str_replace(strtolower($componentName) . '/', '', $name);
+			}
+
+			$_deps[$type][] = $name;
 		}
 	}
 
