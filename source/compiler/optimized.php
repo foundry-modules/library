@@ -7,8 +7,6 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;
 
-	echo 'window["' . $componentName . '"] = abstractComponent();' . "\n";
-
 	echo 'Dispatch("' . $componentName . ' Definitions").containing(function($){' . "\n";
 
 	// 1. Predefine dependencies
