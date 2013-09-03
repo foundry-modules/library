@@ -26,6 +26,7 @@ class FoundryCompiler
 {
 	private $modules  = array();
 	private $adapters = array();
+	public  $exclude  = array();
 
 	public function __construct()
 	{
@@ -150,6 +151,10 @@ class FoundryCompiler
 		$moduleNames = array();
 
 		foreach ($modules as $module) {
+
+			// If this is in the exclusion list, don't add it to the list.
+			if (in_array($module->name, $this->exclude)) continue;
+
 			$moduleNames[] = '"' . $module->name . '"';
 		}
 
@@ -162,6 +167,10 @@ class FoundryCompiler
 		$data = array();
 
 		foreach ($modules as $module) {
+
+			// If this is in the exclusion list, don't add it to the list.
+			if (in_array($module->name, $this->exclude)) continue;
+
 			$data[] = $module->getData();
 		}
 
@@ -174,6 +183,10 @@ class FoundryCompiler
 		$data = array();
 
 		foreach ($modules as $module) {
+
+			// If this is in the exclusion list, don't add it to the list.
+			if (in_array($module->name, $this->exclude)) continue;
+
 			$data[$module->name] = $module->getData();
 		}
 
