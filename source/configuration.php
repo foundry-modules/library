@@ -15,6 +15,8 @@ defined('_JEXEC') or die('Restricted access');
 
 require_once('constants.php');
 require_once(FOUNDRY_LIB . '/json.php');
+jimport('joomla.filesystem.folder');
+jimport('joomla.filesystem.file');
 
 class FoundryBaseConfiguration {
 
