@@ -134,13 +134,22 @@ class FoundryBaseConfiguration {
 
 	public function write()
 	{
+		$configPath = $this->path . '/config/';
+		$configUri  = $this->uri  . '/config/';
+
 		$script = new stdClass();
 		$script->id     = $this->id();
-		$script->file   = $this->path . '/config/' . $script->id . '.js';
-		$script->url    = $this->uri  . '/config/' . $script->id . '.js';
-		$script->data   = $this->path . '/config/' . $script->id . '.json';
+		$script->file   = $configPath . $script->id . '.js';
+		$script->url    = $configUri  . $script->id . '.js';
+		$script->data   = $configPath . $script->id . '.json';
 		$script->failed = false;
 
+		// Create config folder if it doesn't exist
+		if (!JFolder::exists($configPath)) {
+			JFolder::create($configPath);
+		}
+
+		// Write config file
 		if (!JFile::exists($script->file)) {
 
 			$contents = $this->export();
