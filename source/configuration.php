@@ -46,6 +46,12 @@ class FoundryBaseConfiguration {
 		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
 		$this->mode        = JRequest::getString($this->shortName . '_mode', $this->mode       , 'GET');
 
+		// Explicitly set mode to uncompressed when
+		// under development mode.
+		if ($this->environment=='development') {
+			$this->mode = 'uncompressed';
+		}		
+
 		switch($this->mode) {
 
 			case 'compressed':
