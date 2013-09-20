@@ -188,7 +188,11 @@ class FoundryBaseConfiguration {
 	{
 		$this->update();
 
-        $files = JFolder::files($this->path . '/config/', '.', true, true);
+		$configPath = $this->path . '/config';
+
+		if (!JFolder::exists($configPath)) return;
+
+        $files = JFolder::files($configPath, '.', true, true);
 
 		foreach($files as $file) {
 
