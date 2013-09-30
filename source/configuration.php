@@ -382,9 +382,9 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 			"mode"          => $this->mode,
 			"path"          => $this->uri,
 			"extension"     => $this->extension,
-			"rootPath"      => rtrim(JURI::root(), '/'),
-			"basePath"      => JURI::root() . (($app->isAdmin()) ? 'administrator' : ''),
-			"indexUrl"      => JURI::root() . (($app->isAdmin()) ? 'administrator/index.php' : 'index.php'),
+			"rootPath"      => FOUNDRY_JOOMLA_URI,
+			"basePath"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
+			"indexUrl"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
 				"version"   => floatval(JVERSION),
 				"debug"     => (bool) $config->get('debug')
