@@ -386,7 +386,7 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 			"basePath"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
 			"indexUrl"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
-				"version"   => floatval(JVERSION),
+				"version"   => (string) JVERSION,
 				"debug"     => (bool) $config->get('debug')
 			),
 			"locale"        => array(
