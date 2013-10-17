@@ -163,7 +163,9 @@ class FoundryBaseConfiguration {
 			// Also write cache data
 			$json = new Services_JSON();
 			$data = $this->data();
-			JFile::write($script->data, $json->encode($data));
+			$jsonData = $json->encode($data);
+
+			JFile::write($script->data, $jsonData);
 		}
 
 		return $script;
