@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		Foundry
- * @copyright	Copyright (C) 2012 StackIdeas Private Limited. All rights reserved.
+ * @copyright	Copyright (C) 2010 - 2013 Stack Ideas Sdn Bhd. All rights reserved.
  * @license		GNU/GPL, see LICENSE.php
  *
  * Foundry is free software. This version may have been modified pursuant
