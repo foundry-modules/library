@@ -213,6 +213,7 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 	public $baseUrl;
 	public $version;
 	public $token;
+	public $options = array();
 	
 	public function __construct()
 	{
@@ -249,12 +250,15 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 	{
 		$this->update();
 
-		$data = array(
-			"environment"   => $this->environment,
-			"source"        => $this->source,
-			"mode"          => $this->mode,
-			"baseUrl"       => $this->baseUrl,
-			"version"       => $this->version
+		$data = array_merge_recursive(
+			array(
+				"environment"   => $this->environment,
+				"source"        => $this->source,
+				"mode"          => $this->mode,
+				"baseUrl"       => $this->baseUrl,
+				"version"       => $this->version
+			),
+			$this->options
 		);
 
 		return $data;
