@@ -13,6 +13,8 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+if (class_exists('FoundryCompiler')) return;
+
 require_once('constants.php');
 require_once(FOUNDRY_CLASSES . '/module.php');
 require_once(FOUNDRY_LIB . '/json.php');
