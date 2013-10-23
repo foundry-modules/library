@@ -20,8 +20,6 @@ jimport('joomla.filesystem.file');
 
 class FoundryBaseConfiguration {
 
-	static $attached = false;
-
 	public $fullName;
 	public $shortName;
 	public $path;
@@ -207,6 +205,8 @@ class FoundryBaseConfiguration {
 
 class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 
+	static $components = array();
+
 	public $foundry;
 	
 	public $componentName;
@@ -217,13 +217,15 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 	
 	public function __construct()
 	{
-		$this->foundry = new FoundryConfiguration();
+		$this->foundry = FoundryConfiguration::getInstance();
 
 		$this->componentName = 'com_' . strtolower($this->fullName);
 		$this->path = FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
 		$this->uri  = FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
 
 		$this->file = $this->path . '/config.php';
+
+		self::$components[] = $this;
 
 		parent::__construct();
 	}
@@ -232,18 +234,37 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 	{
 		parent::update();
 
-		// Automatically reflect environment & mode settings on Foundry
-		// unless it is explicitly overriden via url.
-		$this->foundry->environment = $this->environment;
-		$this->foundry->mode        = $this->mode;
+		// If this is the first time we're attaching a component
+		if (count(self::$components)==1) {
 
-		// @TODO: Automatically switch to remote source when
-		// under static mode + full Foundry is not installed.
-		if ($this->environment=="static") {
-			// $this->foundry->source = 'remote';
+			// Automatically reflect environment & mode settings on Foundry
+			// unless it is explicitly overriden via url.			
+			$this->foundry->environment = $this->environment;
+			$this->foundry->mode        = $this->mode;
+
+			// @TODO: Automatically switch to remote source when
+			// under static mode + full Foundry is not installed.
+			if ($this->environment=="static") {
+				// $this->foundry->source = 'remote';
+			}
+
+			// @TODO: Switch environment back to static if full foundry doesn't exists.
+
+		// If we're attaching a secondary component
+		} else {
+
+			// and the secondary component is running under static mode
+			if ($this->environment='static') {
+
+				// If the environment of the primary component is static,
+				// it should load under optimized mode, else it should
+				// just follow the environment of the primary component.
+				$primaryComponent   = self::$components[0];
+				$primaryEnvironment = $primaryComponent->environment;
+
+				$this->environment = ($primaryEnvironment=='static') ? 'optimized' : $primaryEnvironment;
+			}
 		}
-
-		// @TODO: Switch environment back to static if full foundry doesn't exists.	
 	}	
 
 	public function toArray()
@@ -264,33 +285,19 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 		return $data;
 	}
 
-	public function export()
-	{
-		$data = "";
-
-		// Include Foundry configuration
-	    // if we're running under static mode
-		if ($this->environment=='static') {
-			$data .= $this->foundry->export();
-		}		
-
-		$data .= parent::export();
-
-		return $data;
-	}
-
 	public function attach()
 	{
-		$document = JFactory::getDocument();
+		// Update configuration
+		$this->update();
 
-		// Load Foundry configuration if we're not under static mode
-		if ($this->environment!=='static') {
-			$this->foundry->attach();
-		}
+		// Attach Foundry configuration & scripts
+		$this->foundry->attach();
 
+		// Attach component configuration & scripts
 		parent::attach();
 
 		// And lastly an ajax token ;)
+		$document = JFactory::getDocument();
 		$document->addCustomTag('<script>' . $this->fullName . '.token = "' . $this->token . '";</script>');
 	}
 
@@ -304,17 +311,27 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 
 class FoundryConfiguration extends FoundryBaseConfiguration {
 
+	static $attached = false;
+
 	public function __construct()
 	{
-		$this->fullName    = "EasySocial";
-		$this->shortName   = "es";
-
 		$this->environment = 'optimized';
 		$this->path = FOUNDRY_PATH;
 		$this->uri  = FOUNDRY_URI;
 		$this->file = FOUNDRY_CLASSES . '/configuration/config.php';
 		
 		parent::__construct();
+	}
+
+	public static function getInstance()
+	{
+		static $instance = null;
+
+		if (is_null($instance)) {
+			$instance = new self();
+		}
+
+		return $instance;
 	}
 
 	public function update()
@@ -329,10 +346,11 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 			case 'static':
 				// Does not load anything as foundry.js
 				// is included within component script file.
+				$this->scripts = array();
 				break;
 
 			case 'optimized':
-			default:			
+			default:
 				// Loads a single "foundry.js"
 				// containing all core foundry files.
 				$this->scripts = array(
