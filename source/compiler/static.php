@@ -53,7 +53,7 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
-	echo 'Dispatch.to("Foundry/' . FOUNDRY_VERSION . ' Core Plugins").at(function($, manifest) {' . "\n";
+	echo FOUNDRY_BOOTLOADER . '.plugin("static", function($){' . "\n";
 
 	if (!empty($deps['Foundry'])) {
 

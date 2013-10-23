@@ -18,7 +18,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;
 
-	echo 'Dispatch("' . $componentName . ' Definitions").containing(function($){' . "\n";
+	echo FOUNDRY_BOOTLOADER . '.installer("' . $componentName . '", "definitions", function($){' . "\n";
 
 	// 1. Predefine dependencies
 
@@ -66,7 +66,7 @@ foreach($deps as $componentName => $component) {
 		echo '})();' . "\n";
 	}
 
-	echo '}).to("' . $componentName . '");' . "\n";
+	echo '});' . "\n";
 }
 
 foreach($deps as $componentName => $component) {
@@ -74,7 +74,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'Dispatch("' . $componentName . ' Scripts").containing(function($){' . "\n";
+	echo FOUNDRY_BOOTLOADER . '.installer("' . $componentName . '", "scripts", function($){' . "\n";
 
 	// 3. Scripts
 	if (!empty($scripts)) {
@@ -82,5 +82,5 @@ foreach($deps as $componentName => $component) {
 		echo $this->getData($scripts);
 	}
 
-	echo '}).to("' . $componentName . '");' . "\n";
+	echo '});' . "\n";
 }

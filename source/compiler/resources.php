@@ -18,7 +18,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo 'Dispatch("' . $componentName . ' Extras").containing(function($){' . "\n";
+	echo FOUNDRY_BOOTLOADER . '.installer("' . $componentName . '", "resources", function($){' . "\n";
 
 	// 4. Templates
 	if (!empty($component['template'])) {
@@ -44,5 +44,5 @@ foreach($deps as $componentName => $component) {
 		echo '$.require.language.loader(' . $this->getJSONData($languages) . ');' . "\n";
 	}
 
-	echo '}).to("' . $componentName . '");' . "\n";
+	echo '});' . "\n";
 }
