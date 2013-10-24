@@ -215,7 +215,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 	
 	public function __construct()
 	{
-		$this->foundry = FoundryConfiguration::getInstance();
+		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance();
 
 		$this->componentName = 'com_' . strtolower($this->fullName);
 		$this->path = %BOOTCODE%_FOUNDRY_MEDIA_PATH . '/' . $this->componentName;

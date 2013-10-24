@@ -13,6 +13,6 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-include(FOUNDRY_PATH . '/scripts/bootloader' . $this->extension);
+include(%BOOTCODE%_FOUNDRY_PATH . '/scripts/bootloader' . $this->extension);
 ?>
 <?php echo %BOOTCODE%_FOUNDRY_BOOTCODE; ?>.setup(<?php echo $this->toJSON(); ?>);
