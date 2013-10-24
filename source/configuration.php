@@ -13,14 +13,13 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-if (class_exists('FoundryBaseConfiguration')) return;
+require_once('framework.php');
 
-require_once('constants.php');
-require_once(FOUNDRY_LIB . '/json.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/json.php');
 jimport('joomla.filesystem.folder');
 jimport('joomla.filesystem.file');
 
-class FoundryBaseConfiguration {
+class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public $fullName;
 	public $shortName;
@@ -205,7 +204,7 @@ class FoundryBaseConfiguration {
 	}
 }
 
-class FoundryComponentConfiguration extends FoundryBaseConfiguration {
+class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseConfiguration {
 
 	static $components = array();
 
@@ -222,8 +221,8 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 		$this->foundry = FoundryConfiguration::getInstance();
 
 		$this->componentName = 'com_' . strtolower($this->fullName);
-		$this->path = FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
-		$this->uri  = FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
+		$this->path = %BOOTCODE%_FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
+		$this->uri  = %BOOTCODE%_FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
 
 		$this->file = $this->path . '/config.php';
 
@@ -311,16 +310,16 @@ class FoundryComponentConfiguration extends FoundryBaseConfiguration {
 	}
 }
 
-class FoundryConfiguration extends FoundryBaseConfiguration {
+class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguration {
 
 	static $attached = false;
 
 	public function __construct()
 	{
 		$this->environment = 'optimized';
-		$this->path = FOUNDRY_PATH;
-		$this->uri  = FOUNDRY_URI;
-		$this->file = FOUNDRY_CLASSES . '/configuration/config.php';
+		$this->path = %BOOTCODE%_FOUNDRY_PATH;
+		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
+		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
 		
 		parent::__construct();
 	}
@@ -390,7 +389,7 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 
 			case 'remote':
 				// Note: Foundry CDN is not working yet.
-				$this->uri = FOUNDRY_CDN;
+				$this->uri = %BOOTCODE%_FOUNDRY_CDN;
 				break;
 		}
 	}
@@ -408,9 +407,9 @@ class FoundryConfiguration extends FoundryBaseConfiguration {
 			"mode"          => $this->mode,
 			"path"          => $this->uri,
 			"extension"     => $this->extension,
-			"rootPath"      => FOUNDRY_JOOMLA_URI,
-			"basePath"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
-			"indexUrl"      => FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
+			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
+			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
+			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
 				"version"   => (string) JVERSION,
 				"debug"     => (bool) $config->get('debug')

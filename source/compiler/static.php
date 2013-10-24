@@ -53,7 +53,7 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
-	echo FOUNDRY_BOOTLOADER . '.plugin("static", function($){' . "\n";
+	echo %BOOTCODE% . '.plugin("static", function($){' . "\n";
 
 	if (!empty($deps['Foundry'])) {
 
@@ -94,4 +94,4 @@ if ($compileMode=='static') {
 	echo '});' . "\n";
 }
 
-include(FOUNDRY_PATH . '/joomla/compiler/' . 'optimized.php');
+include(%BOOTCODE%_FOUNDRY_PATH . '/joomla/compiler/' . 'optimized.php');

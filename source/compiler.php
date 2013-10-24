@@ -13,18 +13,17 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-if (class_exists('FoundryCompiler')) return;
+require_once('framework.php');
 
-require_once('constants.php');
-require_once(FOUNDRY_CLASSES . '/module.php');
-require_once(FOUNDRY_LIB . '/json.php');
-require_once(FOUNDRY_LIB . '/jsmin.php');
-require_once(FOUNDRY_LIB . '/cssmin.php');
-require_once(FOUNDRY_LIB . '/closure.php');
+require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/module.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/json.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/jsmin.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/closure.php');
 
 jimport( 'joomla.filesystem.file' );
 
-class FoundryCompiler
+class %BOOTCODE%_FoundryCompiler
 {
 	private $modules  = array();
 	private $adapters = array();
@@ -42,7 +41,7 @@ class FoundryCompiler
 		}
 
 		// Try to get the adapter class
-		$adapterClass = 'FoundryCompiler_' . $adapterName;
+		$adapterClass = '%BOOTCODE%_FoundryCompiler_' . $adapterName;
 
 		if (!class_exists($adapterClass)) {
 
@@ -225,7 +224,7 @@ class FoundryCompiler
 
 	public function getFoundry()
 	{
-		$foundry = FOUNDRY_PATH . '/scripts/foundry.js';
+		$foundry = %BOOTCODE%_FOUNDRY_PATH . '/scripts/foundry.js';
 
 		$content = JFile::read($foundry);
 
@@ -235,7 +234,7 @@ class FoundryCompiler
 	public function build($compileMode='optimized', $deps=array(), $minify=false)
 	{
 		ob_start();
-			include(FOUNDRY_PATH . '/joomla/compiler/' . $compileMode . '.php');
+			include(%BOOTCODE%_FOUNDRY_PATH . '/joomla/compiler/' . $compileMode . '.php');
 			$contents = ob_get_contents();
 		ob_end_clean();
 
@@ -307,11 +306,11 @@ class FoundryCompiler
 	}
 }
 
-class FoundryCompiler_Foundry {
+class %BOOTCODE%_FoundryCompiler_Foundry {
 
 	public $name = 'Foundry';
 
-	public $path = FOUNDRY_PATH;
+	public $path = %BOOTCODE%_FOUNDRY_PATH;
 
 	public $compiler = null;
 

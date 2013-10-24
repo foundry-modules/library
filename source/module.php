@@ -13,9 +13,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-if (class_exists('FoundryModule')) return;
-
-class FoundryModule
+class %BOOTCODE%_FoundryModule
 {
 	public $name      = null;
 	public $type      = null;

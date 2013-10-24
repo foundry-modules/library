@@ -15,4 +15,4 @@ defined('_JEXEC') or die('Restricted access');
 
 include(FOUNDRY_PATH . '/scripts/bootloader' . $this->extension);
 ?>
-<?php echo FOUNDRY_BOOTLOADER; ?>.setup(<?php echo $this->toJSON(); ?>);
+<?php echo %BOOTCODE%_FOUNDRY_BOOTCODE; ?>.setup(<?php echo $this->toJSON(); ?>);

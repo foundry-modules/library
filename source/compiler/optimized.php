@@ -18,7 +18,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;
 
-	echo FOUNDRY_BOOTLOADER . '.installer("' . $componentName . '", "definitions", function($){' . "\n";
+	echo %BOOTCODE% . '.installer("' . $componentName . '", "definitions", function($){' . "\n";
 
 	// 1. Predefine dependencies
 
@@ -74,7 +74,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo FOUNDRY_BOOTLOADER . '.installer("' . $componentName . '", "scripts", function($){' . "\n";
+	echo %BOOTCODE% . '.installer("' . $componentName . '", "scripts", function($){' . "\n";
 
 	// 3. Scripts
 	if (!empty($scripts)) {
