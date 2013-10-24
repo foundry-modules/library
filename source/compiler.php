@@ -16,7 +16,6 @@ defined('_JEXEC') or die('Restricted access');
 require_once('framework.php');
 
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/module.php');
-require_once(%BOOTCODE%_FOUNDRY_LIB . '/jsmin.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/closure.php');
 

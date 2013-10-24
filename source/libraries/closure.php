@@ -142,10 +142,9 @@ class %BOOTCODE%_ClosureCompiler {
      */
     protected function _fallback($js)
     {
+        require_once(%BOOTCODE%_FOUNDRY_LIB . '/jsmin.php');
         return %BOOTCODE%_JSMinPlus::minify($js);
     }
 }
 
 class %BOOTCODE%_Minify_JS_ClosureCompiler_Exception extends Exception {}
-
-}

@@ -13,8 +13,6 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-if (!class_exists('CssMinifier')) {
-
 /**
  * CssMin - A (simple) css minifier with benefits
  * 
@@ -147,7 +145,7 @@ abstract class %BOOTCODE%_aCssParserPlugin
      * @param array $configuration Plugin configuration [optional]
      * @return void
      */
-    public function __construct(CssParser $parser, array $configuration = null)
+    public function __construct(%BOOTCODE%_CssParser $parser, array $configuration = null)
         {
         $this->configuration    = $configuration;
         $this->parser           = $parser;
@@ -209,7 +207,7 @@ abstract class %BOOTCODE%_aCssMinifierPlugin
      * @param array $configuration Plugin configuration [optional]
      * @return void
      */
-    public function __construct(CssMinifier $minifier, array $configuration = array())
+    public function __construct(%BOOTCODE%_CssMinifier $minifier, array $configuration = array())
         {
         $this->configuration    = $configuration;
         $this->minifier         = $minifier;
@@ -263,7 +261,7 @@ abstract class %BOOTCODE%_aCssMinifierFilter
      * @param array $configuration Filter configuration [optional]
      * @return void
      */
-    public function __construct(CssMinifier $minifier, array $configuration = array())
+    public function __construct(%BOOTCODE%_CssMinifier $minifier, array $configuration = array())
         {
         $this->configuration    = $configuration;
         $this->minifier         = $minifier;
@@ -618,7 +616,7 @@ class %BOOTCODE%_CssVariablesMinifierPlugin extends %BOOTCODE%_aCssMinifierPlugi
                         }
                     }
                 // If no value was found trigger an error and replace the token with a CssNullToken
-                CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": No value found for variable <code>" . $variable . "</code> in media types <code>" . implode(", ", $mediaTypes) . "</code>", (string) $token));
+                %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": No value found for variable <code>" . $variable . "</code> in media types <code>" . implode(", ", $mediaTypes) . "</code>", (string) $token));
                 $token = new %BOOTCODE%_CssNullToken();
                 return true;
                 }
@@ -735,7 +733,7 @@ class %BOOTCODE%_CssVariablesMinifierFilter extends %BOOTCODE%_aCssMinifierFilte
             }
         if (!($plugin = $this->minifier->getPlugin("%BOOTCODE%_CssVariablesMinifierPlugin")))
             {
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>CssVariablesMinifierPlugin</code> was not found but is required for <code>" . __CLASS__ . "</code>"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>CssVariablesMinifierPlugin</code> was not found but is required for <code>" . __CLASS__ . "</code>"));
             }
         else
             {
@@ -805,7 +803,7 @@ class %BOOTCODE%_CssUrlParserPlugin extends %BOOTCODE%_aCssParserPlugin
             $this->parser->setBuffer(substr($this->parser->getBuffer(), 0, -1) . ")"); // Replace the LF with the url string delimiter
             $this->parser->popState();
             $this->parser->unsetExclusive();
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated string literal", $line . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated string literal", $line . "_"));
             }
         // End of string
         elseif ($char === ")" && $state === "T_URL")
@@ -888,7 +886,7 @@ class %BOOTCODE%_CssStringParserPlugin extends %BOOTCODE%_aCssParserPlugin
             $this->parser->popState();
             $this->parser->unsetExclusive();
             $this->parser->setBuffer(substr($this->parser->getBuffer(), 0, -1) . $this->delimiterChar); // Replace the LF with the current string char
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated string literal", $line . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated string literal", $line . "_"));
             $this->delimiterChar = null;
             }
         // End of string
@@ -1138,7 +1136,7 @@ class %BOOTCODE%_CssRulesetParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 {
                 return false;
                 }
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
             }
         // End of declaration
         elseif (($char === ";" || $char === "}") && $state === "T_RULESET_DECLARATION")
@@ -1480,7 +1478,7 @@ class %BOOTCODE%_CssParser
                     }
                 else
                     {
-                    CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
+                    %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
                     }
                 }
             }
@@ -2010,7 +2008,7 @@ class %BOOTCODE%_CssMinifier
                     }
                 else
                     {
-                    CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The filter <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
+                    %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The filter <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
                     }
                 }
             }
@@ -2027,7 +2025,7 @@ class %BOOTCODE%_CssMinifier
                     }
                 else
                     {
-                    CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
+                    %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": The plugin <code>" . $name . "</code> with the class name <code>" . $class . "</code> was not found"));
                     }
                 }
             }
@@ -2318,7 +2316,7 @@ class %BOOTCODE%_CssMin
      * @param CssError $error
      * @return void
      */
-    public static function triggerError(CssError $error)
+    public static function triggerError(%BOOTCODE%_CssError $error)
         {
         self::$errors[] = $error;
         if (self::$isVerbose)
@@ -2328,7 +2326,7 @@ class %BOOTCODE%_CssMin
         }
     }
 // Initialises CssMin
-CssMin::initialise();
+%BOOTCODE%_CssMin::initialise();
 
 /**
  * This {@link aCssMinifierFilter minifier filter} import external css files defined with the @import at-rule into the 
@@ -2359,7 +2357,7 @@ class %BOOTCODE%_CssImportImportsMinifierFilter extends %BOOTCODE%_aCssMinifierF
         {
         if (!isset($this->configuration["BasePath"]) || !is_dir($this->configuration["BasePath"]))
             {
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Base path <code>" . ($this->configuration["BasePath"] ? $this->configuration["BasePath"] : "null"). "</code> is not a directory"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Base path <code>" . ($this->configuration["BasePath"] ? $this->configuration["BasePath"] : "null"). "</code> is not a directory"));
             return 0;
             }
         for ($i = 0, $l = count($tokens); $i < $l; $i++)
@@ -2370,12 +2368,12 @@ class %BOOTCODE%_CssImportImportsMinifierFilter extends %BOOTCODE%_aCssMinifierF
                 // Import file was not found/is not a file
                 if (!is_file($import))
                     {
-                    CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Import file <code>" . $import. "</code> was not found.", (string) $tokens[$i]));
+                    %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Import file <code>" . $import. "</code> was not found.", (string) $tokens[$i]));
                     }
                 // Import file already imported; remove this @import at-rule to prevent recursions
                 elseif (in_array($import, $this->imported))
                     {
-                    CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Import file <code>" . $import. "</code> was already imported.", (string) $tokens[$i]));
+                    %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Import file <code>" . $import. "</code> was already imported.", (string) $tokens[$i]));
                     $tokens[$i] = null;
                     }
                 else
@@ -2938,7 +2936,7 @@ class %BOOTCODE%_CssConvertNamedColorsMinifierPlugin extends %BOOTCODE%_aCssMini
      * @param array $configuration Plugin configuration [optional]
      * @return void
      */
-    public function __construct(CssMinifier $minifier, array $configuration = array())
+    public function __construct(%BOOTCODE%_CssMinifier $minifier, array $configuration = array())
         {
         $this->reMatch = "/(^|\s)+(" . implode("|", array_keys($this->transformation)) . ")(\s|$)+/eiS";
         parent::__construct($minifier, $configuration);
@@ -3583,7 +3581,7 @@ class %BOOTCODE%_CssConvertFontWeightMinifierPlugin extends %BOOTCODE%_aCssMinif
      * @param CssMinifier $minifier The CssMinifier object of this plugin.
      * @return void
      */
-    public function __construct(CssMinifier $minifier)
+    public function __construct(%BOOTCODE%_CssMinifier $minifier)
         {
         $this->reMatch = "/(^|\s)+(" . implode("|", array_keys($this->transformation)). ")(\s|$)+/eiS";
         parent::__construct($minifier);
@@ -4025,7 +4023,7 @@ class %BOOTCODE%_CssAtVariablesParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 {
                 return false;
                 }
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @variables declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @variables declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
             }
         // End of @variables declaration
         elseif (($char === ";" || $char === "}") && $state === "T_AT_VARIABLES_DECLARATION")
@@ -4216,7 +4214,7 @@ class %BOOTCODE%_CssAtPageParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 {
                 return false;
                 }
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @page declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @page declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
             }
         // End of @page declaration
         elseif (($char === ";" || $char === "}") && $state == "T_AT_PAGE_DECLARATION")
@@ -4636,7 +4634,7 @@ class %BOOTCODE%_CssAtKeyframesParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 {
                 return false;
                 }
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @keyframes ruleset declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @keyframes ruleset declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
             }
         // End of declaration
         elseif (($char === ";" || $char === "}") && $state === "T_AT_KEYFRAMES_RULESET_DECLARATION")
@@ -4818,7 +4816,7 @@ class %BOOTCODE%_CssAtImportParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 }
             else
                 {
-                CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Invalid @import at-rule syntax", $this->parser->buffer));
+                %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Invalid @import at-rule syntax", $this->parser->buffer));
                 }
             $this->parser->popState();
             }
@@ -4924,7 +4922,7 @@ class %BOOTCODE%_CssAtFontFaceParserPlugin extends %BOOTCODE%_aCssParserPlugin
                 {
                 return false;
                 }
-            CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @font-face declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
+            %BOOTCODE%_CssMin::triggerError(new %BOOTCODE%_CssError(__FILE__, __LINE__, __METHOD__ . ": Unterminated @font-face declaration", $this->buffer . ":" . $this->parser->getBuffer() . "_"));
             }
         // End of @font-face declaration
         elseif (($char === ";" || $char === "}") && $state === "T_AT_FONT_FACE_DECLARATION")
@@ -5094,5 +5092,4 @@ class %BOOTCODE%_CssAtCharsetParserPlugin extends %BOOTCODE%_aCssParserPlugin
         return true;
         }
     }
-}
 ?>
