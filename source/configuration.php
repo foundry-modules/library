@@ -74,6 +74,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	{
 		$data = $this->toArray();
 		$data["modified"] = filemtime($this->file);
+		$data["foundry_version"] = "$FOUNDRY_LONG_VERSION";
 
 		return $data;
 	}

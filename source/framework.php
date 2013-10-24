@@ -19,17 +19,18 @@ class %BOOTCODE%_FoundryFramework {
 
 		$NS = (empty($ns)) ? strtoupper($className) . '_' : $ns;
 
-		define($NS.'JOOMLA_PATH', JPATH_ROOT);
-		define($NS.'JOOMLA_URI' , rtrim(JURI::root(), '/'));
-		define($NS.'MEDIA_PATH' , constant($NS.'JOOMLA_PATH') . '/media');
-		define($NS.'MEDIA_URI'  , constant($NS.'JOOMLA_URI') . '/media');
-		define($NS.'BOOTCODE'   , '%BOOTCODE%');
-		define($NS.'VERSION'    , '$FOUNDRY_VERSION');
-		define($NS.'PATH'       , constant($NS.'JOOMLA_PATH') . '/media/foundry/' . constant($NS.'VERSION'));
-		define($NS.'URI'        , rtrim(JURI::root(), '/') . '/media/foundry/' . constant($NS.'VERSION'));
-		define($NS.'CDN'        , 'http://foundry.stackideas.com/' .  constant($NS.'VERSION'));
-		define($NS.'CLASSES'    , constant($NS.'PATH') . '/joomla');
-		define($NS.'LIB'        , constant($NS.'PATH') . '/libraries');
+		define($NS.'JOOMLA_PATH' , JPATH_ROOT);
+		define($NS.'JOOMLA_URI'  , rtrim(JURI::root(), '/'));
+		define($NS.'MEDIA_PATH'  , constant($NS.'JOOMLA_PATH') . '/media');
+		define($NS.'MEDIA_URI'   , constant($NS.'JOOMLA_URI') . '/media');
+		define($NS.'BOOTCODE'    , '%BOOTCODE%');
+		define($NS.'VERSION'     , '$FOUNDRY_VERSION');
+		define($NS.'LONG_VERSION', '$FOUNDRY_LONG_VERSION');
+		define($NS.'PATH'        , constant($NS.'JOOMLA_PATH') . '/media/foundry/' . constant($NS.'VERSION'));
+		define($NS.'URI'         , rtrim(JURI::root(), '/') . '/media/foundry/' . constant($NS.'VERSION'));
+		define($NS.'CDN'         , 'http://foundry.stackideas.com/' .  constant($NS.'VERSION'));
+		define($NS.'CLASSES'     , constant($NS.'PATH') . '/joomla');
+		define($NS.'LIB'         , constant($NS.'PATH') . '/libraries');
 	}
 
 	public static function defineComponentConstants($className='', $ns=null) {
@@ -50,6 +51,7 @@ class %BOOTCODE%_FoundryFramework {
 
 		// Foundry
 		define($NS.'FOUNDRY_VERSION'      , '$FOUNDRY_VERSION' );
+		define($NS.'FOUNDRY_LONG_VERSION' , '$FOUNDRY_LONG_VERSION');
 		define($NS.'FOUNDRY_BOOTCODE'     , '%BOOTCODE%' );
 		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
 		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
