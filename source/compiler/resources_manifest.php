@@ -46,7 +46,4 @@ foreach($deps as $componentName => $component) {
 
 	$_manifest[] = $_deps;
 }
-
-$json = new Services_JSON();
-
-echo $json->encode($_manifest);
+echo json_encode($_manifest);

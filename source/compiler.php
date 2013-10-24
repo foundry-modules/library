@@ -16,7 +16,6 @@ defined('_JEXEC') or die('Restricted access');
 require_once('framework.php');
 
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/module.php');
-require_once(%BOOTCODE%_FOUNDRY_LIB . '/json.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/jsmin.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/closure.php');
@@ -164,7 +163,6 @@ class %BOOTCODE%_FoundryCompiler
 
 	public function getData($modules)
 	{
-		$json = new Services_JSON();
 		$data = array();
 
 		foreach ($modules as $module) {
@@ -180,7 +178,6 @@ class %BOOTCODE%_FoundryCompiler
 
 	public function getJSONData($modules, $minify=false)
 	{
-		$json = new Services_JSON();
 		$data = array();
 
 		foreach ($modules as $module) {
@@ -191,17 +188,15 @@ class %BOOTCODE%_FoundryCompiler
 			$data[$module->name] = $module->getData();
 		}
 
-		return $json->encode($data);
+		return json_encode($data);
 	}
 
 	public function getStylesheetData($stylesheets)
 	{
-		$json = new Services_JSON();
-
 		$data = new stdClass();
 		$data->content = $this->minifyCSS($this->getData($stylesheets));
 
-		return $json->encode($data);
+		return json_encode($data);
 	}
 
 	public function getManifest($file)
@@ -216,8 +211,7 @@ class %BOOTCODE%_FoundryCompiler
 			return null;
 		}
 
-		$json = new Services_JSON();
-		$manifest = $json->decode($content);
+		$manifest = json_decode($content);
 
 		return $manifest;
 	}

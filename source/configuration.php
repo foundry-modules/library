@@ -15,7 +15,6 @@ defined('_JEXEC') or die('Restricted access');
 
 require_once('framework.php');
 
-require_once(%BOOTCODE%_FOUNDRY_LIB . '/json.php');
 jimport('joomla.filesystem.folder');
 jimport('joomla.filesystem.file');
 
@@ -86,9 +85,8 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function toJSON()
 	{
-		$json = new Services_JSON();
 		$config = $this->toArray();
-		return $json->encode($config);
+		return json_encode($config);
 	}
 
 	public function createScriptTag($path)
@@ -160,9 +158,8 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 			}
 
 			// Also write cache data
-			$json = new Services_JSON();
 			$data = $this->data();
-			$jsonData = $json->encode($data);
+			$jsonData = json_encode($data);
 
 			JFile::write($script->data, $jsonData);
 		}
