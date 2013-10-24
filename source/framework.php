@@ -36,13 +36,6 @@ class %BOOTCODE%_FoundryFramework {
 
 		$NS = (empty($ns)) ? strtoupper($className) . '_' : $ns;
 
-		// Foundry
-		define($NS.'FOUNDRY_VERSION'      , '$FOUNDRY_VERSION' );
-		define($NS.'FOUNDRY_BOOTCODE'     , '%BOOTCODE%' );
-		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
-		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
-		define($NS.'FOUNDRY_CONFIGURATION', constant($NS.'FOUNDRY') . '/joomla/configuration.php');
-
 		// Joomla
 		define($NS.'JOOMLA'           , JPATH_ROOT);
 		define($NS.'JOOMLA_URI'       , rtrim(JURI::root(), '/'));
@@ -54,6 +47,13 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'JOOMLA_ADMIN_TEMPLATES_URI' , constant($NS.'JOOMLA_ADMIN_URI') . '/templates' );
 		define($NS.'JOOMLA_MODULES'             , constant($NS.'JOOMLA') . '/modules' );
 		define($NS.'JOOMLA_MODULES_URI'         , constant($NS.'JOOMLA_URI') . '/modules' );
+
+		// Foundry
+		define($NS.'FOUNDRY_VERSION'      , '$FOUNDRY_VERSION' );
+		define($NS.'FOUNDRY_BOOTCODE'     , '%BOOTCODE%' );
+		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
+		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
+		define($NS.'FOUNDRY_CONFIGURATION', constant($NS.'FOUNDRY') . '/joomla/configuration.php');		
 
 		// Component
 		define($NS.'CLASS_NAME'    , $className);
