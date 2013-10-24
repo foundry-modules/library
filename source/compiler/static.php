@@ -53,7 +53,7 @@ if ($compileMode=='static') {
 	// 1. Foundry (foundry.js)
 	echo $this->getFoundry();
 
-	echo %BOOTCODE% . '.plugin("static", function($){' . "\n";
+	echo '%BOOTCODE%.plugin("static", function($){' . "\n";
 
 	if (!empty($deps['Foundry'])) {
 

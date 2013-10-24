@@ -18,7 +18,7 @@ foreach($deps as $componentName => $component) {
 	// Skip foundry
 	if ($componentName=='Foundry') continue;	
 
-	echo %BOOTCODE% . '.installer("' . $componentName . '", "resources", function($){' . "\n";
+	echo '%BOOTCODE%.installer("' . $componentName . '", "resources", function($){' . "\n";
 
 	// 4. Templates
 	if (!empty($component['template'])) {

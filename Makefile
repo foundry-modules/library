@@ -13,4 +13,10 @@ build:
 	cat source/configuration/config.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/configuration/config.php
 
 	mkdir -p ${FOUNDRY}/joomla/compiler
-	cp source/compiler/* ${FOUNDRY}/joomla/compiler
+	cat source/compiler/optimized.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/optimized.php
+	cat source/compiler/resources_manifest.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/resources_manifest.php
+	cat source/compiler/resources.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/resources.php
+	cat source/compiler/static.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/static.php
+
+
+

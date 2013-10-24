@@ -15,7 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 
 class %BOOTCODE%_FoundryFramework {
 
-	public static defineFrameworkConstants($className='', $ns=null) {
+	public static function defineFrameworkConstants($className='', $ns=null) {
 
 		$NS = (empty($ns)) ? strtoupper($className) . '_' : $ns;
 
@@ -23,8 +23,8 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'JOOMLA_URI' , rtrim(JURI::root(), '/'));
 		define($NS.'MEDIA_PATH' , constant($NS.'JOOMLA_PATH') . '/media');
 		define($NS.'MEDIA_URI'  , constant($NS.'JOOMLA_URI') . '/media');
-		define($NS.'BOOTCODE'   , '$FOUNDRY_BOOTCODE');
-		define($NS.'VERSION'    , '%BOOTCODE%');
+		define($NS.'BOOTCODE'   , '%BOOTCODE%');
+		define($NS.'VERSION'    , '$FOUNDRY_VERSION');
 		define($NS.'PATH'       , constant($NS.'JOOMLA_PATH') . '/media/foundry/' . constant($NS.'VERSION'));
 		define($NS.'URI'        , rtrim(JURI::root(), '/') . '/media/foundry/' . constant($NS.'VERSION'));
 		define($NS.'CDN'        , 'http://foundry.stackideas.com/' .  constant($NS.'VERSION'));
@@ -32,15 +32,15 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'LIB'        , constant($NS.'PATH') . '/libraries');
 	}
 
-	public static defineComponentConstants($className='', $ns=null) {
+	public static function defineComponentConstants($className='', $ns=null) {
 
 		$NS = (empty($ns)) ? strtoupper($className) . '_' : $ns;
 
 		// Foundry
 		define($NS.'FOUNDRY_VERSION'      , '$FOUNDRY_VERSION' );
 		define($NS.'FOUNDRY_BOOTCODE'     , '%BOOTCODE%' );
-		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION');
-		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION');
+		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
+		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
 		define($NS.'FOUNDRY_CONFIGURATION', constant($NS.'FOUNDRY') . '/joomla/configuration.php');
 
 		// Joomla
@@ -56,9 +56,9 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'JOOMLA_MODULES_URI'         , constant($NS.'JOOMLA_URI') . '/modules' );
 
 		// Component
-		define($NS.'CLASS_NAME'    , $className));
+		define($NS.'CLASS_NAME'    , $className);
 		define($NS.'IDENTIFIER'    , strtolower($className));
-		define($NS.'COMPONENT_NAME', 'com_' . constant($NS.'IDENTIFIER');
+		define($NS.'COMPONENT_NAME', 'com_' . constant($NS.'IDENTIFIER'));
 		define($NS.'PREFIX'        , constant($NS.'IDENTIFIER') . '/');
 		define($NS.'SITE' 	       , constant($NS.'JOOMLA') . '/components/' . constant($NS.'COMPONENT_NAME'));
 		define($NS.'SITE_URI'      , constant($NS.'JOOMLA_URI') . '/components/' . constant($NS.'COMPONENT_NAME'));

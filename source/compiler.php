@@ -325,7 +325,7 @@ class %BOOTCODE%_FoundryCompiler_Foundry {
 			$moduleType  = 'script';
 		}
 
-		$module = new FoundryModule($this->compiler, $adapterName, $moduleName, $moduleType);
+		$module = new %BOOTCODE%_FoundryModule($this->compiler, $adapterName, $moduleName, $moduleType);
 
 		return $module;
 	}
