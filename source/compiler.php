@@ -291,12 +291,12 @@ class %BOOTCODE%_FoundryCompiler
 
 	public function minifyJS($contents)
 	{
-		return ClosureCompiler::minify( $contents );
+		return %BOOTCODE%_ClosureCompiler::minify( $contents );
 	}
 
 	public function minifyCSS($contents)
 	{
-		return CssMin::minify($contents);
+		return %BOOTCODE%_CssMin::minify($contents);
 	}
 }
 
