@@ -13,7 +13,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-require_once('framework.php');
+require_once(JPATH_ROOT . '/media/foundry/$FOUNDRY_VERSION/joomla/framework.php');
 
 jimport('joomla.filesystem.folder');
 jimport('joomla.filesystem.file');
@@ -33,12 +33,12 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public $scripts    = array();
 	public $async       = true;
-	public $defer       = true;	
+	public $defer       = true;
 
 	public function __construct()
 	{
 		$this->update();
-	}	
+	}
 
 	public function update()
 	{
@@ -50,7 +50,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		// under development mode.
 		if ($this->environment=='development') {
 			$this->mode = 'uncompressed';
-		}		
+		}
 
 		switch($this->mode) {
 
@@ -130,7 +130,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		return $script;
-	}	
+	}
 
 	public function write()
 	{
@@ -207,13 +207,13 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 	static $components = array();
 
 	public $foundry;
-	
+
 	public $componentName;
 	public $baseUrl;
 	public $version;
 	public $token;
 	public $options = array();
-	
+
 	public function __construct()
 	{
 		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance();
@@ -237,7 +237,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		if (count(self::$components)==1) {
 
 			// Automatically reflect environment & mode settings on Foundry
-			// unless it is explicitly overriden via url.			
+			// unless it is explicitly overriden via url.
 			$this->foundry->environment = $this->environment;
 			$this->foundry->mode        = $this->mode;
 
@@ -264,7 +264,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 				$this->environment = ($primaryEnvironment=='static') ? 'optimized' : $primaryEnvironment;
 			}
 		}
-	}	
+	}
 
 	public function toArray()
 	{
@@ -318,7 +318,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
-		
+
 		parent::__construct();
 	}
 
@@ -339,7 +339,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 		// Allow url overrides
 		$this->mode = JRequest::getString('fd_mode', $this->mode, 'GET');
-	
+
 		switch ($this->environment) {
 
 			case 'static':
@@ -359,7 +359,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 			case 'development':
 				$this->async = false;
-				$this->defer = false;			
+				$this->defer = false;
 				// Load core foundry files separately.
 				$this->scripts = array(
 					'jquery',
@@ -425,7 +425,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		if (self::$attached) return;
 
 		parent::attach();
-		
-		self::$attached = true;		
-	}	
+
+		self::$attached = true;
+	}
 }

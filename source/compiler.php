@@ -13,7 +13,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-require_once('framework.php');
+require_once(JPATH_ROOT . '/media/foundry/$FOUNDRY_VERSION/joomla/framework.php');
 
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/module.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
@@ -135,7 +135,7 @@ class %BOOTCODE%_FoundryCompiler
 						if ($module->type=='script') {
 
 							// Crawl into module's dependencies
-							$this->getDependencies($module->getManifest(), $deps);						
+							$this->getDependencies($module->getManifest(), $deps);
 						}
 					}
 				}
@@ -244,7 +244,7 @@ class %BOOTCODE%_FoundryCompiler
 		$options['static']    Path to save static script (without extension). If this field is blank, static script won't be compiled.
 		$options['optimized'] Path to save optimized script (without extension). If this field is blank, optimized script won't be compiled.
 		$options['resources'] Path to save resources script (without extension). If this field is blank, optimized script won't be compiled.
-		$options['minify']    Boolean to determine whether to minify script.			
+		$options['minify']    Boolean to determine whether to minify script.
 	*/
 
 	public function compile($manifest="", $options)
@@ -317,7 +317,7 @@ class %BOOTCODE%_FoundryCompiler_Foundry {
 		if (empty($adapterName)) {
 			$adapterName = $this->name;
 		}
-		
+
 		// Rollback to foundry script when the module type if library
 		if ($moduleType=='library') {
 			$adapterName = 'Foundry';
@@ -374,7 +374,7 @@ class %BOOTCODE%_FoundryCompiler_Foundry {
 	{
 		$scriptContent = $this->getContent($name, 'script', 'js');
 
-		return $scriptContent;		
+		return $scriptContent;
 	}
 
 	public function getStylesheet($name)
