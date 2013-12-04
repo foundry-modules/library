@@ -364,7 +364,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 				$this->scripts = array(
 					'jquery',
 					'lodash',
-					'bootstrap',
+					'bootstrap3',
 					'responsive',
 					'utils',
 					'uri',
