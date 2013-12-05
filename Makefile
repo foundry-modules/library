@@ -18,7 +18,10 @@ build:
 	cat source/compiler/resources.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/resources.php
 	cat source/compiler/static.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/joomla/compiler/static.php
 
+	make -C "modules/lessphp"
+
 	mkdir -p ${FOUNDRY}/libraries
 	cat source/libraries/closure.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/libraries/closure.php
 	cat source/libraries/cssmin.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/libraries/cssmin.php
 	cat source/libraries/jsmin.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/libraries/jsmin.php
+	cat source/libraries/lessc.php | ${RESOLVE_NAMESPACE} > ${FOUNDRY}/libraries/lessc.php
