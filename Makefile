@@ -21,6 +21,7 @@ folders:
 
 modules:
 	make -C "modules/lessphp"
+	make -C "modules/cssmin"
 
 build:
 
