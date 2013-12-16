@@ -1,3 +1,6 @@
 [submodule "modules/lessphp"]
 	path = modules/lessphp
 	url = git@github.com:foundry-modules/lessphp.git
+[submodule "modules/cssmin"]
+	path = modules/cssmin
+	url = git@github.com:foundry-modules/cssmin.git
