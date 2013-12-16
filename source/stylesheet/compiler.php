@@ -2,74 +2,135 @@
 
 class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
+	private $stylesheet;
+	private $task;
+
+	protected static $defaultOptions = array(
+		'force' => false
+	);
+
+	protected static $locations = array(
+		'user',
+		'site',
+		'site_base',
+		'admin',
+		'admin_base',
+		'module',
+		'media',
+		'component',
+		'foundry',
+		'global'
+	);
+
+	protected static $importOrdering = array(
+		'site' => array(
+			'user',
+			'site',
+			'site_base',
+			'component',
+			'global'
+		),
+
+		'admin' => array(
+			'user',
+			'admin',
+			'admin_base',
+			'component',
+			'global'
+		),
+
+		'module' => array(
+			'module',
+			'component',
+			'global'
+		)
+	);
+
 	// TODO: Restrict importing of less files within the allowed directories.
 	public $allowedDir = array();
 
-	public function __construct() {
+	public function __construct($stylesheet) {
 
-		$this->task = %BOOTCODE%_Stylesheet_Task();
+		$this->stylesheet = $stylesheet;
 	}
 
-	private $defaultOptions = array(
-		'force' => false,
-		'variables' => array(),
-		'importDir' => array()
-	);
+	public function run($section, $options=array()) {
 
-	public function run($options=array()) {
-
+		// Create new task
+		$this->task = %BOOTCODE%_Stylesheet_Task();
 		$task = $this->task;
 
 		// Normalize options
-		$options = array_merge($this->defaultOptions, $options);
+		$options = array_merge(self::$defaultOptions, $options);
+
+		// Get current stylesheet location
+		$currentLocation = $this->stylesheet->location;
 
 		// Get paths
-		$in = $options['in'];
-		$out = $options['out'];
+		$in   = $this->stylesheet->file($section, 'less');
+		$out  = $this->stylesheet->file($section, 'css');
 		$root = dirname($out);
 
-		// Check if less file exists
+		// Check if less file exists.
 		if (!JFile::exists($in)) {
 			return $task->reject('Missing less file "' . $in . '".');
 		}
 
-		// Check if folder is writable
+		// Check if folder is writable.
 		if (!is_writable($root)) {
 			return $task->reject('Unable to write files inside the folder "' . $root . '".');
 		}
 
-		// Check if css file is writable
+		// Check if css file is writable.
 		if (JFile::exists($out) && !is_writable($out)) {
 			return $task->reject('Unable to write css file "' . $out . '".');
 		}
 
-		// Prepare cache
-		$cacheFile = $options['cache'];
+		// Prepare cache.
+		$cache = $this->stylesheet->file($section, 'cache');
 		$cacheBefore = null;
 
-		// Check if cache file is writable
-		if (JFile::exists($cacheFile) && !is_writable($cacheFile)) {
+		// Check if cache file is writable.
+		if (JFile::exists($cache) && !is_writable($cache)) {
 			return $task->reject('Unable to write cache file "' . $out . '".');
 		}
 
-		// If there is an existing cache file
-		if (JFile::exists($cacheFile)) {
+		// If there is an existing cache file,
+		if (JFile::exists($cache)) {
 
-			// Get contents of cache file
-			$content = JFile::read($cacheFile);
+			// get contents of cache file.
+			$content = JFile::read($cache);
 
 			if ($content===false) {
-				$task->report('Unable to read existing cache file "' . $cacheFile . '".', 'info');
+				$task->report('Unable to read existing cache file "' . $cache . '".', 'info');
 			} else {
 				$cacheBefore = json_decode($content);
 			}
 		}
 
-		// Set compiler options
-		$this->setVariables($options['variables']);
-		$this->setImportDir($options['importDir']);
+		// Generate location variables
+		$variables = array();
 
-		// Compile less stylesheet
+		foreach (self::$locations as $location) {
+			$path = $this->folder($location);
+			$variables[$location] = 'file://' . $path;
+			$variables[$location . '_uri'] = $this->relative($path, $root);
+		}
+
+		// Set variables
+		$this->setVariables($variables);
+
+		// Generate import directories
+		$importDir = array();
+
+		foreach (self::$importOrdering[$currentLocation] as $location) {
+			$importDir[] = $this->folder($location);
+		}
+
+		// Set import directories
+		$this->setImportDir($importDir);
+
+		// Compile less stylesheet.
 		try {
 			$cacheAfter = $this->cachedCompileFile((empty($cacheBefore) ? $in : $cacheBefore), $options['force']);
 		} catch (Exception $exception) {
@@ -83,23 +144,29 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 			return $task->reject('Incompatible less cache structure or invalid input file was provided.');
 		}
 
-		// Determine if there are changes in this stylesheet
+		// Determine if there are changes in this stylesheet.
 		if (empty($cacheBefore) || $cacheAfter['updated'] > $cacheBefore['updated']) {
 
-			// Write stylesheet file
+			// Write stylesheet file.
 			if (!JFile::write($out, $cacheContent)) {
-				return $task->reject('An error occured writing css file "' . $out . '".');
+				return $task->reject('An error occured while writing css file "' . $out . '".');
 			}
 
 			// Write cache file.
 			if (!JFile::write($cacheFile, $cacheAfter)) {
-				return $task->reject('An error occured writing cache file "' . $cacheFile '".');
+				return $task->reject('An error occured while writing cache file "' . $cacheFile '".');
+			}
+
+			// Write log file.
+			$log = $this->stylesheet->file($section, 'log');
+			if (!JFile::write($log, $task->toJSON())) {
+				$task->report('An error occured while writing log file "' . $logFile . '".', 'warn');
 			}
 
 		// If there are no changes, skip writing stylesheet & cache file.
 		} else {
 
-			$task->report('Nothing has changed in this stylesheet.', 'info');
+			$task->report('There are no changes in this stylesheet.', 'info');
 		}
 
 		return $task->resolve();
