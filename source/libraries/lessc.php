@@ -66,7 +66,7 @@ class %BOOTCODE%_lessc {
 	static protected $nextImportId = 0; // uniquely identify imports
 
 	// attempts to find the path of an import url, returns null for css files
-	protected function findImport($url) {
+	public function findImport($url) {
 		foreach ((array)$this->importDir as $dir) {
 			$full = $dir.(substr($dir, -1) != '/' ? '/' : '').$url;
 			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
@@ -1996,7 +1996,7 @@ class %BOOTCODE%_lessc {
 		return $out;
 	}
 
-	protected function makeParser($name) {
+	public function makeParser($name) {
 		$parser = new %BOOTCODE%_lessc_parser($this, $name);
 		$parser->writeComments = $this->preserveComments;
 
