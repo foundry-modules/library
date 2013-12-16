@@ -47,4 +47,4 @@ build:
 clean:
 	rm -fr ${TARGET_SCRIPT_FOLDER}
 
-.PHONY:
+.PHONY: all modules
