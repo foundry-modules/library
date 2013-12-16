@@ -1,17 +1,4 @@
 <?php
-/**
- * @package		Foundry
- * @copyright	Copyright (C) 2010 - 2013 Stack Ideas Sdn Bhd. All rights reserved.
- * @license		GNU/GPL, see LICENSE.php
- *
- * Foundry is free software. This version may have been modified pursuant
- * to the GNU General Public License, and as distributed it includes or
- * is derivative of works licensed under the GNU General Public License or
- * other free or open source software licenses.
- * See COPYRIGHT.php for copyright notices and details.
- */
-
-defined('_JEXEC') or die('Restricted access');
 
 class %BOOTCODE%_FoundryFramework {
 
@@ -55,7 +42,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'FOUNDRY_BOOTCODE'     , '%BOOTCODE%' );
 		define($NS.'FOUNDRY'		      , constant($NS.'JOOMLA') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
 		define($NS.'FOUNDRY_URI'	      , constant($NS.'JOOMLA_URI') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
-		define($NS.'FOUNDRY_CONFIGURATION', constant($NS.'FOUNDRY') . '/joomla/configuration.php');		
+		define($NS.'FOUNDRY_CONFIGURATION', constant($NS.'FOUNDRY') . '/joomla/configuration.php');
 
 		// Component
 		define($NS.'CLASS_NAME'    , $className);
@@ -79,7 +66,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'SITE_THEMES'      , constant($NS.'SITE') . '/themes');
 		define($NS.'SITE_THEMES_URI'  , constant($NS.'SITE_URI') . '/themes');
 		define($NS.'ADMIN_THEMES'	  , constant($NS.'ADMIN') . '/themes');
-		define($NS.'ADMIN_THEMES_URI' , constant($NS.'ADMIN_URI') . '/themes');		
+		define($NS.'ADMIN_THEMES_URI' , constant($NS.'ADMIN_URI') . '/themes');
 	}
 }
 
