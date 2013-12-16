@@ -12,3 +12,5 @@
  */
 
 defined('_JEXEC') or die('Restricted access');
+
+require_once(JPATH_ROOT . '/media/foundry/$FOUNDRY_VERSION/joomla/framework.php');
