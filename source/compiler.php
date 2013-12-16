@@ -1,12 +1,10 @@
 <?php
 
-require_once(JPATH_ROOT . '/media/foundry/$FOUNDRY_VERSION/joomla/framework.php');
-
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/module.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/closure.php');
 
-jimport( 'joomla.filesystem.file' );
+jimport('joomla.filesystem.file');
 
 class %BOOTCODE%_FoundryCompiler
 {

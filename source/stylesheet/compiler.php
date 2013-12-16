@@ -1,5 +1,7 @@
 <?php
 
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/lessc.php');
+
 class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 	private $stylesheet;
