@@ -57,9 +57,7 @@ class %BOOTCODE%_Stylesheet_Task {
 		$this->report($message, $type);
 
 		$duration = round($this->time_total, 2) . 'secs';
-		$usage    = number_format(memory_get_peak_usage() / 1048576, 2, '.', '') . 'mb';
 		$this->report("Time taken: $duration", self::MESSAGE_INFO);
-		$this->report("Peak memory usage: $usage", self::MESSAGE_INFO);
 
 		return $this;
 	}
