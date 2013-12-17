@@ -29,8 +29,8 @@ class %BOOTCODE%_Stylesheet_Task {
 
 	public function __construct($name='Task', $autostart=true) {
 
+		$this->name  = $name;
 		$this->state = self::STATE_PENDING;
-		$this->name = $name;
 
 		if ($autostart) $this->start();
 	}
@@ -40,7 +40,7 @@ class %BOOTCODE%_Stylesheet_Task {
 		if (empty($message)) $message = "$this->name started.";
 
 		$this->time_start = microtime(true);
-		$this->mem_start = memory_get_usage();
+		$this->mem_start  = memory_get_usage();
 		$this->report($message, $type);
 
 		return $this;
@@ -50,11 +50,16 @@ class %BOOTCODE%_Stylesheet_Task {
 
 		if (empty($message)) $message = "$this->name stopped.";
 
-		$this->time_end = microtime(true);
+		$this->time_end   = microtime(true);
 		$this->time_total = $this->time_end - $this->time_start;
-		$this->mem_end = memory_get_usage();
-		$this->mem_peak = memory_get_peak_usage();
-		$this->report($message);
+		$this->mem_end    = memory_get_usage();
+		$this->mem_peak   = memory_get_peak_usage();
+		$this->report($message, $type);
+
+		$duration = round($this->time_total, 2) . 'secs';
+		$usage    = number_format(memory_get_peak_usage() / 1048576, 2, '.', '') . 'mb';
+		$this->report("Time taken: $duration", self::MESSAGE_INFO);
+		$this->report("Peak memory usage: $usage", self::MESSAGE_INFO);
 
 		return $this;
 	}
@@ -64,8 +69,8 @@ class %BOOTCODE%_Stylesheet_Task {
 		if (empty($message)) $message = "$this->name completed.";
 
 		$this->message = $message;
-		$this->state = self::STATE_SUCCESS;
-		$this->failed = false;
+		$this->state   = self::STATE_SUCCESS;
+		$this->failed  = false;
 		$this->stop($message, $type);
 
 		return $this;
@@ -76,8 +81,8 @@ class %BOOTCODE%_Stylesheet_Task {
 		if (empty($message)) $message = "$this->name failed.";
 
 		$this->message = $message;
-		$this->state = $self::STATE_ERROR;
-		$this->failed = true;
+		$this->state   = $self::STATE_ERROR;
+		$this->failed  = true;
 		$this->stop($message, $type);
 
 		return $this;
