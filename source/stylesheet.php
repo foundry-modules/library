@@ -218,7 +218,7 @@ class %BOOTCODE%_Stylesheet {
 	}
 
 	// $mode = fast | cache | full
-	public function build($mode, $options) {
+	public function build($mode='cache', $options=array()) {
 
 		$builder = new %BOOTCODE%_Stylesheet_Builder($this);
 		$task = $builder->run($mode);
