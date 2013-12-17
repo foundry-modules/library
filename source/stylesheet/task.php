@@ -18,6 +18,7 @@ class %BOOTCODE%_Stylesheet_Task {
 	public $details = array();
 	public $failed = false;
 	public $subtasks = array();
+	public $result;
 
 	// Compile profiling
 	public $time_start;

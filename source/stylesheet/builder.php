@@ -7,37 +7,45 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public $stylesheet = null;
 
+	protected static $defaultOptions = array(
+		'force' => false
+	);
+
 	public function __construct($stylesheet) {
 
 		$this->stylesheet = $stylesheet;
 	}
 
-	public function run($in) {
+	public function run($mode='cache', $options=array()) {
 
 		// Create compile task object.
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task();
+		$this->task = new %BOOTCODE%_Foundry_Stylesheet_Task("Build stylesheet");
+		$task = $this->task;
+
+		// Normalize options
+		$options = array_merge(self::$defaultOptions, $options);
 
 		// Get main stylesheet file.
-		$stylesheet = $this->file('stylesheet');
+		$in = $this->stylesheet->file('css');
 
 		// Stop if main stylesheet file is missing.
-		if (!JFile::exists($task->stylesheet)) {
-			return $task->reject('Missing main stylesheet file "' . $compile->stylesheet . '".');
+		if (!JFile::exists($in)) {
+			return $task->reject("Missing main stylesheet file '$in'.");
 		}
 
 		// Get content of main stylesheet file.
-		$content = JFile::read($stylesheet);
+		$content = JFile::read($in);
 
 		// Stop if unable to read the main stylesheet file.
 		if ($content===false) {
-			return $task->reject('Unable to read main stylesheet file "' . $compile->stylesheet . '".');
+			return $task->reject("Unable to read main stylesheet file '$in'.");
 		}
 
 		// Get list of sections from stylesheet content.
-		$compile->sections = %BOOTCODE%_Stylesheet_Analyzer::sections($content);
+		$sections = %BOOTCODE%_Stylesheet_Analyzer::sections($content);
 
 		// Stop if there are no sections to compile.
-		if (count($compile->sections) < 1) {
+		if (count($sections) < 1) {
 			return $task->reject('Unable to retrieve stylesheet sections.');
 		}
 
@@ -57,6 +65,11 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 				// Store subtask
 				$task->subtasks[] = $subtask;
+
+				// Stop building if one of the subtask failed.
+				if ($subtask->failed) {
+					return $task->reject("An error occured while compiling section '$section'.");
+				}
 			}
 		}
 
@@ -65,41 +78,121 @@ class %BOOTCODE%_Stylesheet_Builder {
 		// If minify is off, nothing to do.
 		if ($options['$minify']) {
 
-			// This holds the content of the "style.min.css" file.
-			$content = '';
+			// Detect changes in minified stylesheets.
+			$detectTask = $this->detectChanges();
+			$task->subtasks[] = $detectTask;
 
-			foreach ($sections as $section) {
+			// If there is a changes in minified stylesheets,
+			if ($joinTask->result===true) {
 
-				// $subtask = $this->loadSection($section);
-				// Store subtask
-				// $task->subtasks[] = $subtask;
-				// if ($task->failed) continue;
-
-				$sectionFile = $this->file($section, 'minified');
-
-				if (!JFile::exists($sectionFile)) {
-					return $task->report('Missing minified section file "' . $sectionFile . '".');
-				}
-
-				$sectionContent = JFile::read($file);
-
-				if ($sectionContent===false) {
-					return $task->reject('Unable to read minified section file "' . $sectionFile . '".');
-				}
+				// Join minified stylesheets together.
+				$joinTask = $this->joinMinifiedTask($sections);
+				$task->subtasks[] = $joinTask;
 			}
-
-			// Write to 'style.min.css'
-			JFile::write($this->file('minified'), $content);
 		}
-
 
 		// Generate log file
-		$log = $this->file('log');
+		$logFile = $this->file('log');
+		$logContent = $task->toJSON();
 
-		if (!JFile::write($log, $task->toJSON())) {
-			$task->report('Unable to write log file "' . $logFile . '".', 'warn');
+		if (!JFile::write($logFile, $logContent)) {
+			$task->report("Unable to write log file '$logFile'.");
 		}
 
-		return $task;
+		return $task->resolve();
+	}
+
+	public function detectChanges() {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task('Detect changes in minified stylesheets');
+		$task->result = false;
+
+		$cacheFile = $this->stylesheet->file('cache');
+		$cache = null;
+
+		if (!JFile::exists($cacheFile)) {
+
+			$cacheContent = JFile::read($cacheFile);
+
+			if ($cacheContent===false) {
+				$task->report("Unable to read existing cache file '$cacheFile'.", %BOOTCODE%_Foundry_Stylesheet_Task::MESSAGE_INFO);
+			} else {
+				$cache = json_decode($cacheContent);
+			}
+		}
+
+		if (!is_array($cache)) {
+			$task->report('Incompatible style cache structure or invalid cache file was provided.');
+			$task->result = true;
+			return $task->reject();
+		}
+
+		$files = $cache->files;
+		foreach ($files as $file => $timestamp) {
+
+			// If the file does not exist anymore, template has changed.
+			if (!JFile::exists($file)) {
+				$task->report("Missing file '$file'.");
+				$task->result = true;
+				return $task->reject();
+			}
+
+			// Retrieve file's modified time
+			$modified = filemtime($file);
+
+			// Skip and generate a warning if unable to retrieve timestamp
+			if ($modified===false) {
+				$task->report("Unable to get modified time for '$file'.");
+				continue;
+			}
+
+			if ($timestamp < $modified) {
+				$task->report("Modified file found '$file'.");
+				return $task->resolve();
+			}
+		}
+
+		$task->report('There are no changes in minified stylesheets.');
+
+		return $task->resolve();
+	}
+
+	public function joinMinifiedFiles($sections) {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task('Join minified stylesheets');
+
+		$content = '';
+
+		foreach ($sections as $section) {
+
+			$sectionFile = $this->stylesheet->file($section, 'minified');
+
+			if (!JFile::exists($sectionFile)) {
+				return $task->reject("Missing minified section file '$sectionFile'.");
+			}
+
+			$sectionContent = JFile::read($file);
+
+			if ($sectionContent===false) {
+				return $task->reject("Unable to read minified section file '$sectionFile'.");
+			}
+
+			$content .= $sectionContent;
+		}
+
+		$blocks = %BOOTCODE%_Stylesheet_Analyzer::split($content);
+
+		foreach ($blocks as $i => $block) {
+
+			$filename = 'style' . (($i > 0) ? $i : '');
+			$file = $this->stylesheet->file($filename, 'minified');
+
+			// Write to 'style.min.css'
+			if (!JFile::write($file, $block)) {
+				return $task->reject("An error occured while writing minified file '$file'.");
+			}
+		}
+
+		return $task->resolve();
 	}
 }
