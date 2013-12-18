@@ -46,6 +46,6 @@ build:
 		libraries/lessc
 
 clean:
-	rm -fr ${TARGET_SCRIPT_FOLDER}
+	rm -fr ${TARGET}
 
 .PHONY: all modules
