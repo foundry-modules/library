@@ -6,11 +6,11 @@ TARGET = ${FOUNDRY}/joomla
 
 %:
 	if [ -e "source/$*.php" ]; \
-	then make file name=$* > ${TARGET}/$*.php; fi
+	then make file name=$* | ${RESOLVE_NAMESPACE} > ${TARGET}/$*.php; fi
 
 file:
 	@@cat source/header.php
-	@@cat source/${name}.php | sed '/\<\?php/{x;/Y/!{s/^/Y/;h;d;};x;}' | ${RESOLVE_NAMESPACE}
+	@@cat source/${name}.php | sed '/\<\?php/{x;/Y/!{s/^/Y/;h;d;};x;}'
 
 folders:
 	mkdir -p ${TARGET}
