@@ -1,6 +1,7 @@
 <?php
 
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/lessc.php');
+require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/task.php');
 
 class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
@@ -136,14 +137,14 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		try {
 			$cacheAfter = $this->cachedCompileFile((empty($cacheBefore) ? $in : $cacheBefore), $options['force']);
 		} catch (Exception $exception) {
-			$task->reject('An error occured while compiling less file.');
+			$task->reject("An error occured while compiling less file.");
 			$task->report($exception->getMessage(), 'error');
 			return $task;
 		}
 
 		// Stop if compiler did not return an array object.
 		if (!is_array($cacheAfter)) {
-			return $task->reject('Incompatible less cache structure or invalid input file was provided.');
+			return $task->reject("Incompatible less cache structure or invalid input file was provided.");
 		}
 
 		// Determine if there are changes in this stylesheet.
@@ -151,24 +152,24 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 			// Write stylesheet file.
 			if (!JFile::write($out, $cacheContent)) {
-				return $task->reject('An error occured while writing css file "' . $out . '".');
+				return $task->reject("An error occured while writing css file '$out'.");
 			}
 
 			// Write cache file.
 			if (!JFile::write($cacheFile, $cacheAfter)) {
-				return $task->reject('An error occured while writing cache file "' . $cacheFile '".');
+				return $task->reject("An error occured while writing cache file '$cacheFile'.");
 			}
 
 			// Write log file.
 			$log = $this->stylesheet->file($section, 'log');
 			if (!JFile::write($log, $task->toJSON())) {
-				$task->report('An error occured while writing log file "' . $logFile . '".', 'warn');
+				$task->report("An error occured while writing log file '$logFile'", 'warn');
 			}
 
 		// If there are no changes, skip writing stylesheet & cache file.
 		} else {
 
-			$task->report('There are no changes in this stylesheet.', 'info');
+			$task->report("There are no changes in this stylesheet.", 'info');
 		}
 
 		return $task->resolve();
@@ -177,7 +178,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function makeParser($name) {
 
 		// Thia makes tracing broken less files a lot easier.
-		$this->report('Parsing "' . $name '".', 'info');
+		$this->report("Parsing '$name'.", 'info');
 
 		return parent::makeParser($name);
 	}
