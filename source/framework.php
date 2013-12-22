@@ -67,6 +67,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'SITE_THEMES_URI'  , constant($NS.'SITE_URI') . '/themes');
 		define($NS.'ADMIN_THEMES'	  , constant($NS.'ADMIN') . '/themes');
 		define($NS.'ADMIN_THEMES_URI' , constant($NS.'ADMIN_URI') . '/themes');
+		define($NS.'USER_THEMES'      , constant($NS.'MEDIA') . '/themes');
 	}
 }
 
