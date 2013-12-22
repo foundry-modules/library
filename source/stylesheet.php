@@ -69,6 +69,7 @@ class %BOOTCODE%_Stylesheet {
 
 			case 'component':
 				$folder = constant($NS . 'MEDIA') . '/styles';
+				break;
 
 			case 'foundry':
 				$folder = constant($NS . 'FOUNDRY');
@@ -84,6 +85,7 @@ class %BOOTCODE%_Stylesheet {
 
 			default:
 				$folder = null;
+				break;
 		}
 
 		// Ensure consistency across platforms.

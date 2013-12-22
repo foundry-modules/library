@@ -60,7 +60,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function run($section, $options=array()) {
 
 		// Create new task
-		$this->task = %BOOTCODE%_Stylesheet_Task();
+		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
 		$task = $this->task;
 
 		// Normalize options
@@ -115,9 +115,9 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		$variables = array();
 
 		foreach (self::$locations as $location) {
-			$path = $this->folder($location);
-			$variables[$location] = 'file://' . $path;
-			$variables[$location . '_uri'] = $this->relative($path, $root);
+			$path = $this->stylesheet->folder($location);
+			$variables[$location] = "'" . 'file://' . $path . "'";
+			$variables[$location . '_uri'] = "'" . $this->stylesheet->relative($path, $root) . "'";
 		}
 
 		// Set variables
@@ -127,7 +127,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		$importDir = array();
 
 		foreach (self::$importOrdering[$currentLocation] as $location) {
-			$importDir[] = $this->folder($location);
+			$importDir[] = $this->stylesheet->folder($location);
 		}
 
 		// Set import directories
@@ -135,10 +135,10 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		// Compile less stylesheet.
 		try {
-			$cacheAfter = $this->cachedCompileFile((empty($cacheBefore) ? $in : $cacheBefore), $options['force']);
+			$cacheAfter = $this->cachedCompile((empty($cacheBefore) ? $in : $cacheBefore), $options['force']);
 		} catch (Exception $exception) {
-			$task->reject("An error occured while compiling less file.");
 			$task->report($exception->getMessage(), 'error');
+			$task->reject("An error occured while compiling less file.");
 			return $task;
 		}
 
@@ -178,7 +178,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function makeParser($name) {
 
 		// Thia makes tracing broken less files a lot easier.
-		$this->report("Parsing '$name'.", 'info');
+		$this->task->report("Parsing '$name'.", 'info');
 
 		return parent::makeParser($name);
 	}
@@ -186,8 +186,8 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function findImport($name) {
 
 		// Adds support for absolute paths
-		if (substr($url, 0, 7)=="file://") {
-			$full = substr($url, 7);
+		if (substr($name, 0, 7)=="file://") {
+			$full = substr($name, 7);
 			// TODO: Restrict importing of less files within the allowed directories.
 			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
 				return $file;

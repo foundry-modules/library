@@ -80,7 +80,7 @@ class %BOOTCODE%_Stylesheet_Task {
 		if (empty($message)) $message = "$this->name failed.";
 
 		$this->message = $message;
-		$this->state   = $self::STATE_ERROR;
+		$this->state   = self::STATE_ERROR;
 		$this->failed  = true;
 		$this->stop($message, $type);
 
@@ -95,7 +95,7 @@ class %BOOTCODE%_Stylesheet_Task {
 			'type'      => $type
 		);
 
-		$details[] = $detail;
+		$this->details[] = $detail;
 
 		return $detail;
 	}
@@ -118,12 +118,13 @@ class %BOOTCODE%_Stylesheet_Task {
 		);
 
 		foreach($props as $prop) {
-			$task[$prop] = $this[$prop];
+			$task[$prop] = $this->$prop;
 		}
 
-		$task->subtask = array();
+		$task['subtasks'] = array();
+
 		foreach($this->subtasks as $subtask) {
-			$task->subtask = $subtask->toArray();
+			$task['subtasks'] = $subtask->toArray();
 		}
 
 		return $task;
