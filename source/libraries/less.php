@@ -187,6 +187,7 @@ class %BOOTCODE%_Less_Parser extends %BOOTCODE%_Less_Cache{
 	 */
 	private $filename;
 
+	public static $instance;
 
 	/**
 	 *
@@ -4471,6 +4472,20 @@ class %BOOTCODE%_Less_Tree_Import extends %BOOTCODE%_Less_Tree{
 	}
 
 	function getPath(){
+
+		/* public function findImport($name) {
+
+			// Adds support for absolute paths
+			if (substr($name, 0, 7)=="file://") {
+				$full = substr($name, 7);
+				// TODO: Restrict importing of less files within the allowed directories.
+				if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
+					return $file;
+				}
+			}
+		}
+		*/
+
 		if ($this->path instanceof %BOOTCODE%_Less_Tree_Quoted) {
 			$path = $this->path->value;
 			return ( isset($this->css) || preg_match('/(\.[a-z]*$)|([\?;].*)$/',$path)) ? $path : $path . '.less';
@@ -4532,7 +4547,6 @@ class %BOOTCODE%_Less_Tree_Import extends %BOOTCODE%_Less_Tree{
 		//import once
 		$realpath = realpath($full_path);
 
-
 		if( $realpath && %BOOTCODE%_Less_Parser::FileParsed($realpath) ){
 			if( isset($this->currentFileInfo['reference']) ){
 				$evald->skip = true;
@@ -4575,6 +4589,12 @@ class %BOOTCODE%_Less_Tree_Import extends %BOOTCODE%_Less_Tree{
 
 		if( (isset($this->options['multiple']) && $this->options['multiple']) ){
 			$import_env->importMultiple = true;
+		}
+
+		// @hack: Report import task
+		if (!empty(%BOOTCODE%_Less_Parser::$instance)) {
+			$parser = %BOOTCODE%_Less_Parser::$instance;
+			$parser->task->report("Parsing $full_path.", 'info');
 		}
 
 		$parser = new %BOOTCODE%_Less_Parser($import_env);
@@ -4945,7 +4965,7 @@ class %BOOTCODE%_Less_Tree_MixinCall extends %BOOTCODE%_Less_Tree{
 				$this->index, null, $this->currentFileInfo['filename']);
 
 		}else{
-			throw new %BOOTCODE%_Less_CompilerException(trim($this->selector->toCSS($env)) . " is undefined", $this->index);
+			throw new %BOOTCODE%_Less_CompilerException(trim($this->selector->toCSS($env)) . " is undefined", $this->index, null, $this->currentFileInfo['filename']);
 		}
 	}
 }
@@ -5565,6 +5585,7 @@ class %BOOTCODE%_Less_Tree_Ruleset extends %BOOTCODE%_Less_Tree{
 			$rule = $this->rules[$i];
 
 			if( $rule instanceof %BOOTCODE%_Less_Tree_Import ){
+
 				$rules = $rule->compile($env);
 				if( is_array($rules) ){
 					array_splice($this->rules, $i, 1, $rules);
@@ -6195,7 +6216,7 @@ class %BOOTCODE%_Less_Tree_Variable extends %BOOTCODE%_Less_Tree{
 		}
 
 		if ($this->evaluating) {
-			throw new %BOOTCODE%_Less_CompilerException("Recursive variable definition for " . $name, $this->index, null, $this->currentFileInfo['file']);
+			throw new %BOOTCODE%_Less_CompilerException("Recursive variable definition for " . $name, $this->index, null, $this->currentFileInfo['filename']);
 		}
 
 		$this->evaluating = true;
