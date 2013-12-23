@@ -1,4 +1,4 @@
-all: clean folders modules build
+all: clean folders modules build libs
 
 include ../../build/modules.mk
 
@@ -37,13 +37,18 @@ build:
 		compiler/static \
 		stylesheet \
 		stylesheet/analyzer \
+		stylesheet/builder \
 		stylesheet/compiler \
 		stylesheet/compressor \
 		stylesheet/task \
 		libraries/closure \
 		libraries/cssmin \
 		libraries/jsmin \
-		libraries/lessc
+		libraries/less
+
+libs:
+	rm -fr ${FOUNDRY}/libraries
+	mv ${TARGET}/libraries ${FOUNDRY}/libraries
 
 clean:
 	rm -fr ${TARGET}
