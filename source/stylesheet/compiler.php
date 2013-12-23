@@ -1,12 +1,12 @@
 <?php
 
-require_once(%BOOTCODE%_FOUNDRY_LIB . '/lessc.php');
+require_once(%BOOTCODE%_FOUNDRY_LIB . '/less.php');
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/task.php');
 
 class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 
 	private $stylesheet;
-	private $task;
+	public $task;
 
 	protected static $defaultOptions = array(
 		'force' => false
@@ -67,6 +67,10 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
 		$task = $this->task;
 
+		// Set current instance as default parser
+		// so that it is accessible by all child parsers.
+		FD40_Less_Parser::$instance = $this;
+
 		// Normalize options
 		$options = array_merge(self::$defaultOptions, $options);
 
@@ -92,6 +96,17 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		// Check if css file is writable.
 		if (JFile::exists($out) && !is_writable($out)) {
 			return $task->reject("Unable to write css file '$out'.");
+		}
+
+		// Check if cache folder exists
+		if (!JFolder::exists($cache)) {
+
+			$task->report("Creating cache folder '$cache'.", 'info');
+
+			// Stop if unable to create cache folder.
+			if (!JFolder::create($cache)) {
+				return $task->reject("Unable to create cache folder '$cache'.");
+			}
 		}
 
 		// Determine if cache is unchanged
@@ -121,7 +136,8 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 
 		foreach (self::$locations as $location) {
 			$path = $this->stylesheet->folder($location);
-			$variables .= '@' . $location . ': \'file://' . $path . '\';';
+			// $variables .= '@' . $location . ': \'file://' . $path . '\';';
+			$variables .= '@' . $location . ':\'' . $this->stylesheet->relative($path, $root) . '\';';
 			$variables .= '@' . $location . '_uri: \'' . $this->stylesheet->relative($path, $root) . '\';';
 		}
 
@@ -133,8 +149,8 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 
 		foreach (self::$importOrdering[$currentLocation] as $location) {
 			$path = $this->stylesheet->folder($location);
-			$uri_root = str_replace($site_root, '', $path, 1);
-			$importDir[] = array($path => $uri_root);
+			$uri_root = str_replace($site_root, '', $path);
+			$importDir[$path] = $uri_root;
 		}
 
 		// Set import directories
@@ -142,13 +158,12 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 
 		// Compile less stylesheet.
 		try {
-			$parser = new Less_Parser();
-			$parser->SetCacheDir($cache);
-			$parser->parseFile($in, $root);
-			$css = $parser->getCss();
 
+			$this->SetCacheDir($cache);
+			$this->parseFile($in, $root);
+			$css = $this->getCss();
 		} catch (Exception $exception) {
-			$task->report($exception->getMessage(), 'error');
+			$task->report($exception->getMessage() . ' (' . $exception->getFilename() . ')', 'error');
 			return $task->reject('An error occured while compiling less file.');
 		}
 
