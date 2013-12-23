@@ -57,9 +57,6 @@ class %BOOTCODE%_Stylesheet_Task {
 		$this->mem_peak   = memory_get_peak_usage();
 		$this->report($message, $type);
 
-		$duration = round($this->time_total, 2) . 'secs';
-		$this->report("Time taken: $duration", self::MESSAGE_INFO);
-
 		return $this;
 	}
 
@@ -88,6 +85,9 @@ class %BOOTCODE%_Stylesheet_Task {
 	}
 
 	public function report($message='', $type=self::MESSAGE_WARN) {
+
+		// Strip site root path
+		$message = str_ireplace(%BOOTCODE%_FOUNDRY_JOOMLA_PATH . DIRECTORY_SEPARATOR, '', $message);
 
 		$detail = (object) array(
 			'timestamp' => time(),
@@ -118,7 +118,13 @@ class %BOOTCODE%_Stylesheet_Task {
 		);
 
 		foreach($props as $prop) {
+
 			$task[$prop] = $this->$prop;
+
+			// Strip site root path
+			if ($prop=='message') {
+				$task[$prop] = str_ireplace(%BOOTCODE%_FOUNDRY_JOOMLA_PATH . DIRECTORY_SEPARATOR, '', $this->$prop);
+			}
 		}
 
 		$task['subtasks'] = array();
