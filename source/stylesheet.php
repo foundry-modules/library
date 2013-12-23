@@ -83,6 +83,14 @@ class %BOOTCODE%_Stylesheet {
 				$folder = constant($NS . 'JOOMLA');
 				break;
 
+			case 'cache':
+				$folder = $this->folder('current') . '/cache';
+				break;
+
+			case 'current':
+				$folder = $this->folder($this->location);
+				break;
+
 			default:
 				$folder = null;
 				break;
