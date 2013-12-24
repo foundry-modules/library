@@ -9,7 +9,7 @@ class %BOOTCODE%_Stylesheet_Analyzer {
 		$sections = array();
 		foreach ($lines as $line) {
 			if (substr($line, 0, 7)==='@import') {
-				$sections[] = substr($line, 9, -2);
+				$sections[] = substr($line, 9, -6);
 			}
 		}
 
