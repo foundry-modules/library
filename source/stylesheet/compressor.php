@@ -47,7 +47,7 @@ class %BOOTCODE%_Stylesheet_Compressor extends %BOOTCODE%_CSSMin {
 		$minifiedContent = null;
 
 		try {
-			$minifiedContent = parent::run($content);
+			$minifiedContent = $this->compress($content);
 		} catch (Exception $exception) {
 			$task->reject("An error occured while minifying section '$section'.");
 			$task->report($exception->getMessage(), 'error');
