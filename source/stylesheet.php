@@ -216,7 +216,7 @@ class %BOOTCODE%_Stylesheet {
 	public function compile($section, $options=array()) {
 
 		$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
-		$task = $compiler->run($section);
+		$task = $compiler->run($section, $options);
 		return $task;
 	}
 
