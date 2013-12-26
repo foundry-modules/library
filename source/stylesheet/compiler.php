@@ -53,14 +53,17 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 	// TODO: Restrict importing of less files within the allowed directories.
 	public $allowedDir = array();
 
-	public function __construct($stylesheet) {
+	public function __construct($stylesheet, $options=array()) {
 
 		$this->stylesheet = $stylesheet;
 
-		parent::__construct($options);
+		// Normalize options
+		$this->options = array_merge(self::$defaultOptions, $options);
+
+		parent::__construct($this->options);
 	}
 
-	public function run($section, $options=array()) {
+	public function run($section) {
 
 		// Create new task
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
@@ -69,9 +72,6 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		// Set current instance as default parser
 		// so that it is accessible by all child parsers.
 		FD40_Less_Parser::$instance = $this;
-
-		// Normalize options
-		$options = array_merge(self::$defaultOptions, $options);
 
 		// Get current stylesheet location
 		$currentLocation = $this->stylesheet->location;
@@ -109,7 +109,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		}
 
 		// If we're force compiling, don't check cache.
-		if (!$options['force']) {
+		if (!$this->options['force']) {
 
 			// Determine if cache is unchanged
 			%BOOTCODE%_Less_Cache::$cache_dir = $cache;
