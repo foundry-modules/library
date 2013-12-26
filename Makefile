@@ -39,7 +39,7 @@ build:
 		stylesheet/analyzer \
 		stylesheet/builder \
 		stylesheet/compiler \
-		stylesheet/compressor \
+		stylesheet/minifier \
 		stylesheet/task \
 		libraries/closure \
 		libraries/cssmin \
