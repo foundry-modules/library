@@ -1,7 +1,7 @@
 <?php
 
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/compiler.php');
-require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/compressor.php');
+require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/minifier.php');
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/builder.php');
 
 jimport('joomla.filesystem.folder');
@@ -216,22 +216,22 @@ class %BOOTCODE%_Stylesheet {
 	public function compile($section, $options=array()) {
 
 		$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
-		$task = $compiler->run($section);
+		$task = $compiler->run($section, $options);
 		return $task;
 	}
 
-	public function compress($section, $options=array()) {
+	public function minify($section, $options=array()) {
 
 		$compressor = new %BOOTCODE%_Stylesheet_Compressor($this);
-		$task = $compile->run($section);
+		$task = $compressor->run($section, $options);
 		return $task;
 	}
 
 	// $mode = fast | cache | full
 	public function build($mode='cache', $options=array()) {
 
-		$builder = new %BOOTCODE%_Stylesheet_Builder($this);
-		$task = $builder->run($mode);
+		$builder = new %BOOTCODE%_Stylesheet_Minifier($this);
+		$task = $builder->run($mode, $options);
 		return $task;
 	}
 
