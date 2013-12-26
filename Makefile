@@ -44,7 +44,7 @@ build:
 		libraries/closure \
 		libraries/cssmin \
 		libraries/jsmin \
-		libraries/less
+		libraries/lessc
 
 libs:
 	rm -fr ${FOUNDRY}/libraries
