@@ -61,7 +61,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		parent::__construct($options);
 	}
 
-	public function run($section, $options=array()) {
+	public function run($section, $options=array('force'=>false)) {
 
 		// Create new task
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
@@ -109,26 +109,30 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 			}
 		}
 
-		// Determine if cache is unchanged
-		%BOOTCODE%_Less_Cache::$cache_dir = $cache;
-		$compiled = %BOOTCODE%_Less_Cache::Get(array($in => $root));
+		// If we're force compiling, don't check cache.
+		if (!$options->force) {
 
-		// If this stylesheet has been compiled before,
-		// and there are no changes in this stylsheet.
-		if ($compiled) {
+			// Determine if cache is unchanged
+			%BOOTCODE%_Less_Cache::$cache_dir = $cache;
+			$compiled = %BOOTCODE%_Less_Cache::Get(array($in => $root));
 
-			// Check if the stylesheet file exists
-			if (!JFile::exists($out)) {
+			// If this stylesheet has been compiled before,
+			// and there are no changes in this stylsheet.
+			if ($compiled) {
 
-				// If the stylsheet file does not exist,
-				// copy over from the cache file.
-				if (!JFile::copy($compiled, $out)) {
-					return $task->reject("Unable to copy from cache to css file '$out'.");
+				// Check if the stylesheet file exists
+				if (!JFile::exists($out)) {
+
+					// If the stylsheet file does not exist,
+					// copy over from the cache file.
+					if (!JFile::copy($compiled, $out)) {
+						return $task->reject("Unable to copy from cache to css file '$out'.");
+					}
 				}
-			}
 
-			$task->report('There are no changes in this stylesheet.', 'info');
-			return $task->resolve();
+				$task->report('There are no changes in this stylesheet.', 'info');
+				return $task->resolve();
+			}
 		}
 
 		// Generate location variables
@@ -178,9 +182,11 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 			}
 
 			// Write log file.
-			$log = $this->stylesheet->file($section, 'log');
-			if (!JFile::write($log, $task->toJSON())) {
-				$task->report("An error occured while writing log file '$logFile'", 'warn');
+			$logFile = $this->stylesheet->file($section, 'log');
+			$logContent = $task->toJSON();
+
+			if (!JFile::write($logFile, $logContent)) {
+				$task->report("An error occured while writing log file '$log'", 'warn');
 			}
 		}
 
