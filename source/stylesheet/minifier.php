@@ -3,7 +3,7 @@
 require_once(%BOOTCODE%_FOUNDRY_LIB . '/cssmin.php');
 require_once(%BOOTCODE%_FOUNDRY_CLASSES . '/stylesheet/task.php');
 
-class %BOOTCODE%_Stylesheet_Compressor extends %BOOTCODE%_CSSMin {
+class %BOOTCODE%_Stylesheet_Minifier extends %BOOTCODE%_CSSMin {
 
 	private $stylesheet;
 
@@ -12,7 +12,7 @@ class %BOOTCODE%_Stylesheet_Compressor extends %BOOTCODE%_CSSMin {
 		$this->stylesheet = $stylesheet;
 	}
 
-	public function run($section) {
+	public function run($section, $options=array()) {
 
 		// Create new task
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Minify section '$section'");
