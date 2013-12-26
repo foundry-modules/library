@@ -9,7 +9,8 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 	public $task;
 
 	protected static $defaultOptions = array(
-		'force' => false
+		'force' => false,
+		'compress' => true
 	);
 
 	protected static $locations = array(
@@ -56,12 +57,10 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 
 		$this->stylesheet = $stylesheet;
 
-		$options = array('compress'=>true);
-
 		parent::__construct($options);
 	}
 
-	public function run($section, $options=array('force'=>false)) {
+	public function run($section, $options=array()) {
 
 		// Create new task
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
@@ -110,7 +109,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_Less_Parser {
 		}
 
 		// If we're force compiling, don't check cache.
-		if (!$options->force) {
+		if (!$options['force']) {
 
 			// Determine if cache is unchanged
 			%BOOTCODE%_Less_Cache::$cache_dir = $cache;
