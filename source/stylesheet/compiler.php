@@ -151,7 +151,8 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		if (empty($cacheBefore) || $cacheAfter['updated'] > $cacheBefore['updated']) {
 
 			// Write stylesheet file.
-			if (!JFile::write($out, $cacheContent)) {
+			$content = $cacheAfter['compiled'];
+			if (!JFile::write($out, $content)) {
 				return $task->reject("An error occured while writing css file '$out'.");
 			}
 
@@ -180,7 +181,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function makeParser($name) {
 
 		// Thia makes tracing broken less files a lot easier.
-		$this->task->report("Parsing '$name'.", 'info');
+		// $this->task->report("Parsing '$name'.", 'info');
 
 		return parent::makeParser($name);
 	}
