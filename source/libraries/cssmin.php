@@ -57,7 +57,7 @@ class %BOOTCODE%_CSSmin
      * @param int|bool $linebreak_pos
      * @return string
      */
-    public function run($css = '', $linebreak_pos = FALSE)
+    public function compress($css = '', $linebreak_pos = FALSE)
     {
         if (empty($css)) {
             return '';
