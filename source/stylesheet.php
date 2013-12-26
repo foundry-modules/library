@@ -222,7 +222,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function minify($section, $options=array()) {
 
-		$compressor = new %BOOTCODE%_Stylesheet_Compressor($this);
+		$compressor = new %BOOTCODE%_Stylesheet_Minifier($this);
 		$task = $compressor->run($section, $options);
 		return $task;
 	}
@@ -230,7 +230,7 @@ class %BOOTCODE%_Stylesheet {
 	// $mode = fast | cache | full
 	public function build($mode='cache', $options=array()) {
 
-		$builder = new %BOOTCODE%_Stylesheet_Minifier($this);
+		$builder = new %BOOTCODE%_Stylesheet_Builder($this);
 		$task = $builder->run($mode, $options);
 		return $task;
 	}
