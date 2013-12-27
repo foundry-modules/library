@@ -206,7 +206,7 @@ class %BOOTCODE%_lessc {
 			$this->compileNestedBlock($block, array($name));
 			break;
 		default:
-			$this->throwError("unknown block type: $block->type\n");
+			$block->parser->throwError("unknown block type: $block->type\n", $block->count);
 		}
 	}
 
@@ -717,7 +717,7 @@ class %BOOTCODE%_lessc {
 			$mixins = $this->findBlocks($block, $path, $orderedArgs, $keywordArgs);
 
 			if ($mixins === null) {
-				$this->throwError("{$prop[1][0]} is undefined");
+				$block->parser->throwError("{$prop[1][0]} is undefined", $block->count);
 			}
 
 			foreach ($mixins as $mixin) {
@@ -803,7 +803,7 @@ class %BOOTCODE%_lessc {
 
 			break;
 		default:
-			$this->throwError("unknown op: {$prop[0]}\n");
+			$block->parser->throwError("unknown op: {$prop[0]}\n", $block->count);
 		}
 	}
 
@@ -981,6 +981,39 @@ class %BOOTCODE%_lessc {
 
 	protected function lib_argb($color){
 		return $this->lib_rgbahex($color);
+	}
+
+	/**
+	 * Given an url, decide whether to output a regular link or the base64-encoded contents of the file
+	 *
+	 * @param  array  $value either an argument list (two strings) or a single string
+	 * @return string        formatted url(), either as a link or base64-encoded
+	 */
+	protected function lib_data_uri($value) {
+		$mime = ($value[0] === 'list') ? $value[2][0][2] : null;
+		$url = ($value[0] === 'list') ? $value[2][1][2][0] : $value[2][0];
+
+		$fullpath = $this->findImport($url);
+
+		if($fullpath && ($fsize = filesize($fullpath)) !== false) {
+			// IE8 can't handle data uris larger than 32KB
+			if($fsize/1024 < 32) {
+				if(is_null($mime)) {
+					if(class_exists('finfo')) { // php 5.3+
+						$finfo = new finfo(FILEINFO_MIME);
+						$mime = explode('; ', $finfo->file($fullpath));
+						$mime = $mime[0];
+					} elseif(function_exists('mime_content_type')) { // PHP 5.2
+						$mime = mime_content_type($fullpath);
+					}
+				}
+
+				if(!is_null($mime)) // fallback if the mime type is still unknown
+					$url = sprintf('data:%s;base64,%s', $mime, base64_encode(file_get_contents($fullpath)));
+			}
+		}
+
+		return 'url("'.$url.'")';
 	}
 
 	// utility func to unquote a string
@@ -1209,7 +1242,7 @@ class %BOOTCODE%_lessc {
 	    $darkColor  = array('color', 0, 0, 0);
 	    $lightColor = array('color', 255, 255, 255);
 	    $threshold  = 0.43;
-	     
+
 	    if ( $args[0] == 'list' ) {
 	        $inputColor = ( isset($args[2][0]) ) ? $this->assertColor($args[2][0])  : $lightColor;
 	        $darkColor  = ( isset($args[2][1]) ) ? $this->assertColor($args[2][1])  : $darkColor;
@@ -1467,8 +1500,9 @@ class %BOOTCODE%_lessc {
 
 			list(, $name, $args) = $value;
 			if ($name == "%") $name = "_sprintf";
+
 			$f = isset($this->libFunctions[$name]) ?
-				$this->libFunctions[$name] : array($this, 'lib_'.$name);
+				$this->libFunctions[$name] : array($this, 'lib_'.str_replace('-', '_', $name));
 
 			if (is_callable($f)) {
 				if ($args[0] == 'list')
@@ -2330,7 +2364,7 @@ class %BOOTCODE%_lessc_parser {
 			$this->throwError();
 
 		// TODO report where the block was opened
-		if ( !property_exists($this->env, 'parent') || !is_null($this->env->parent) ) 
+		if ( !property_exists($this->env, 'parent') || !is_null($this->env->parent) )
 			throw new exception('parse error: unclosed block');
 
 		return $this->env;
@@ -3534,6 +3568,14 @@ class %BOOTCODE%_lessc_parser {
 
 		$b->props = array();
 		$b->children = array();
+
+		// add a reference to the parser so
+		// we can access the parser to throw errors
+		// or retrieve the sourceName of this block.
+		$b->parser = $this;
+
+		// so we know the position of this block
+		$b->count = $this->count;
 
 		$this->env = $b;
 		return $b;
