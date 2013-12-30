@@ -142,6 +142,10 @@ class %BOOTCODE%_Stylesheet {
 				$file .= '.log';
 				break;
 
+			case 'list':
+				$file .= '.list';
+				break;
+
 			case 'cache':
 				$file .= '.cache';
 				break;
@@ -233,6 +237,25 @@ class %BOOTCODE%_Stylesheet {
 		$builder = new %BOOTCODE%_Stylesheet_Builder($this);
 		$task = $builder->run($mode, $options);
 		return $task;
+	}
+
+	public function filelist() {
+
+		$listFile = $this->file('list');
+		$fallback = array($this->file('minified'));
+
+		// If the file list does not exists, return a fallback list.
+		if (!JFile::exists($listFile)) return $fallback;
+
+		// Get file list
+		$content = JFile::read($listFile);
+
+		// If the file is unreadable, return a fallback list.
+		if (!$content) return $fallback;
+
+		$list = json_decode($content);
+
+		return is_array($list) ? $list : $fallback;
 	}
 
 	public function purge() {
