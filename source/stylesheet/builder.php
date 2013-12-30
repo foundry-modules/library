@@ -181,16 +181,27 @@ class %BOOTCODE%_Stylesheet_Builder {
 		}
 
 		$blocks = %BOOTCODE%_Stylesheet_Analyzer::split($content);
+		$files  = array();
 
 		foreach ($blocks as $i => $block) {
 
 			$filename = 'style' . (($i > 0) ? $i : '');
-			$file = $this->stylesheet->file($filename, 'minified');
 
 			// Write to 'style.min.css'
-			if (!JFile::write($file, $block)) {
+			$minifiedFile = $this->stylesheet->file($filename, 'minified');
+			$files[] = $file;
+
+			if (!JFile::write($minifiedFile, $block)) {
 				return $task->reject("An error occured while writing minified file '$file'.");
 			}
+		}
+
+		// Write file list to 'style.list'
+		$listFile = $this->stylesheet->file('list');
+		$list = json_encode($files);
+
+		if (!JFile::write($listFile, $list)) {
+			return $task->reject("An error occured while writing file list '$file'.");
 		}
 
 		return $task->resolve();
