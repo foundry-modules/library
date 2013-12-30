@@ -53,6 +53,7 @@ class %BOOTCODE%_lessc {
 
 	public $importDisabled = false;
 	public $importDir = '';
+	private $initialImportDir = null;
 
 	protected $numberPrecision = null;
 
@@ -67,6 +68,11 @@ class %BOOTCODE%_lessc {
 
 	// attempts to find the path of an import url, returns null for css files
 	public function findImport($url) {
+
+		// compileImportedProps changes the importDir sequence,
+		// shouldn't it always follow the original sequence?
+		$importDir = empty($this->initialImportDir) ? $this->importDir : $this->initialImportDir;
+
 		foreach ((array)$this->importDir as $dir) {
 			$full = $dir.(substr($dir, -1) != '/' ? '/' : '').$url;
 			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
@@ -151,17 +157,17 @@ class %BOOTCODE%_lessc {
 	protected function compileImportedProps($props, $block, $out, $sourceParser, $importDir) {
 		$oldSourceParser = $this->sourceParser;
 
-		// $oldImport = $this->importDir;
+		$oldImport = $this->importDir;
 
 		// TODO: this is because the importDir api is stupid
-		// $this->importDir = (array)$this->importDir;
-		// array_unshift($this->importDir, $importDir);
+		$this->importDir = (array)$this->importDir;
+		array_unshift($this->importDir, $importDir);
 
 		foreach ($props as $prop) {
 			$this->compileProp($prop, $block, $out);
 		}
 
-		// $this->importDir = $oldImport;
+		$this->importDir = $oldImport;
 		$this->sourceParser = $oldSourceParser;
 	}
 
@@ -1916,6 +1922,7 @@ class %BOOTCODE%_lessc {
 
 		$this->importDir = (array)$this->importDir;
 		$this->importDir[] = $pi['dirname'].'/';
+		$this->initialImportDir = $this->importDir;
 
 		$this->addParsedFile($fname);
 
