@@ -151,17 +151,17 @@ class %BOOTCODE%_lessc {
 	protected function compileImportedProps($props, $block, $out, $sourceParser, $importDir) {
 		$oldSourceParser = $this->sourceParser;
 
-		$oldImport = $this->importDir;
+		// $oldImport = $this->importDir;
 
 		// TODO: this is because the importDir api is stupid
-		$this->importDir = (array)$this->importDir;
-		array_unshift($this->importDir, $importDir);
+		// $this->importDir = (array)$this->importDir;
+		// array_unshift($this->importDir, $importDir);
 
 		foreach ($props as $prop) {
 			$this->compileProp($prop, $block, $out);
 		}
 
-		$this->importDir = $oldImport;
+		// $this->importDir = $oldImport;
 		$this->sourceParser = $oldSourceParser;
 	}
 
