@@ -27,6 +27,15 @@ class %BOOTCODE%_Stylesheet {
 
 	static $attached = array();
 
+	const FILE_STATUS_NEW       = -1;
+	const FILE_STATUS_UNCHANGED = 0;
+	const FILE_STATUS_MODIFIED  = 1;
+	const FILE_STATUS_MISSING   = 2;
+	const FILE_STATUS_REMOVED   = 3;
+	const FILE_STATUS_UNKNOWN   = 4;
+
+	const STOP_ON_FIRST_OCCURENCE = true;
+
 	public function __construct($ns='', $workspace=array(), $location) {
 
 		$this->ns = $ns;
@@ -246,8 +255,8 @@ class %BOOTCODE%_Stylesheet {
 
 	public function minify($section, $options=array()) {
 
-		$compressor = new %BOOTCODE%_Stylesheet_Minifier($this);
-		$task = $compressor->run($section, $options);
+		$minifier = new %BOOTCODE%_Stylesheet_Minifier($this);
+		$task = $minifier->run($section, $options);
 		return $task;
 	}
 
@@ -304,13 +313,13 @@ class %BOOTCODE%_Stylesheet {
 		return $hasOverride;
 	}
 
-	public function attach($minified=true) {
+	public function attach($minified=true, $allowOverride=true) {
 
 		$document = JFactory::getDocument();
 		$app = JFactory::getApplication();
 
 		// If this stylesheet has overridem
-		if ($this->hasOverride()) {
+		if ($allowOverride && $this->hasOverride()) {
 
 			// get override stylesheet instance,
 			$override = $this->override();
@@ -322,7 +331,8 @@ class %BOOTCODE%_Stylesheet {
 		// Load manifest file.
 		$manifest = $this->manifest();
 
-		// Fallback if unable to load manifest file
+		// If there is no manifest file,
+		// assume folder has simple stylesheets.
 		if (empty($manifest)) {
 			$manifest['style'] = array();
 		}
@@ -350,6 +360,148 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		return $uris;
+	}
+
+	public function changes($fast=false) {
+
+		static $result;
+
+		$key = (string) $fast;
+
+		if (!isset($result)) $result = array();
+
+		// Return cached result if possible
+		if (isset($result[$key])) return $result[$key];
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task('Detect changes in stylesheets');
+
+		$cacheFile = $this->stylesheet->file('cache');
+		$cache = null;
+
+		if (!JFile::exists($cacheFile)) {
+
+			$cacheData = JFile::read($cacheFile);
+
+			if (!$cacheData) {
+				$task->report("No cache file found at '$cacheFile'.", %BOOTCODE%_Foundry_Stylesheet_Task::MESSAGE_INFO);
+				return $task->reject();
+			}
+
+			$cache = json_decode($cacheData);
+		}
+
+		if (!is_array($cache)) {
+			$task->report("Incompatible style cache structure or invalid cache file was provided at '$cacheFile'.");
+			return $task->reject();
+		}
+
+		// Result dataset
+		$changes  = array();
+		$status   = array();
+		$modified = false;
+
+		// Get cache to detect missing or modified file.
+		$files = $cache->files;
+
+		// Get sections to detect new or deleted files.
+		$sections = $this->sections();
+
+		foreach ($sections as $section) {
+
+			$filename = $section . '.css';
+
+			if (!isset($files[$filename]) {
+				$files[$filename] = null;
+			}
+		}
+
+		// Go through each file to look for changes
+		foreach ($files as $filename => $timestamp) {
+
+			// For fast change detection. Used by hasChanges().
+			if ($stopOnFirstOccurence && $modified) break;
+
+			// Get file path
+			$file = $this->file($this->filename, 'css');
+			$state = self::FILE_STATUS_UNCHANGED;
+
+			// If the file does not exist anymore
+			if (!JFile::exists($file)) {
+
+				// If the file still exist in the manifest,
+				// then this file is missing.
+				if (isset($manifest[$filename])) {
+					$task->report("Missing file '$file'.");
+					$state = self::FILE_STATUS_REMOVED;
+
+				// Else this file has been removed.
+				} else {
+					$task->report("Deleted file '$file'.");
+					$$state = self::FILE_STATUS_MISSING;
+				}
+
+			} else {
+
+				// Retrieve file's modified time
+				$modifiedTime = filemtime($file);
+
+				// Skip and generate a warning if unable to retrieve timestamp
+				if ($modifiedTime===false) {
+					$task->report("Unable to get modified time for '$file'.");
+					$$state = self::FILE_STATUS_UNKNOWN;
+				}
+
+				// File is new
+				if (is_null($timestamp)) {
+					$task->report("New file found '$file'.");
+					$state = self::FILE_STATUS_NEW;
+
+				// File is modified
+				} elseif ($timestamp < $modifiedTime) {
+					$task->report("Modified file found '$file'.");
+					$state = self::FILE_STATUS_MODIFIED;
+				}
+			}
+
+			// Add to change list
+			$changes[$file] = $state;
+
+			// Increase state count
+			if (isset($status[$state]) {
+				$status[$state] = 0;
+			}
+			$status[$state]++;
+
+			// Flag to indicate this stylesheet is modified
+			if (!$modified && $state!==0) {
+				$modified = true;
+			}
+		}
+
+		// If there are no changes in this stylesheet, report it.
+		if (!$hasChanges) {
+			$task->report('There are no changes in this stylesheet.');
+		}
+
+		$task->result = (object) array(
+			'status'   => $status,
+			'changes'  => $changes,
+			'modified' => $modified
+		);
+
+		$result[$key] = $result;
+
+		return $task->resolve();
+	}
+
+	public function hasChanges() {
+
+		$task = $this->changes(self::STOP_ON_FIRST_OCCURENCE);
+
+		// Unable to detect changes
+		if ($task->failed) return null;
+
+		return $task->result->modified > 0;
 	}
 
 	public function purge() {
