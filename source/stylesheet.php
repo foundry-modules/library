@@ -264,21 +264,26 @@ class %BOOTCODE%_Stylesheet {
 
 	public function manifest() {
 
-		$listFile = $this->file('list');
-		$fallback = array($this->file('minified'));
+		static $manifestContent;
 
-		// If the file list does not exists, return a fallback list.
-		if (!JFile::exists($listFile)) return $fallback;
+		// Manifest content loaded before, just return it.
+		if (isset($manifestContent)) return $manifestContent;
 
-		// Get file list
-		$content = JFile::read($listFile);
+		$manifestFile = $this->file('manifest');
 
-		// If the file is unreadable, return a fallback list.
-		if (!$content) return $fallback;
+		// No manifest file found.
+		if (!JFile::exists($manifestFile)) return null;
 
-		$list = json_decode($content);
+		// Read manifest file.
+		$manifestData = JFile::read($manifestFile);
 
-		return is_array($list) ? $list : $fallback;
+		// Manifest could not be read.
+		if (!$manifestData) return null;
+
+		// Parse manifest data
+		$manifestContent = json_decode($manifestData);
+
+		return $manifestContent;
 	}
 
 	public function override() {
@@ -307,7 +312,6 @@ class %BOOTCODE%_Stylesheet {
 		$document = JFactory::getDocument();
 		$app = JFactory::getApplication();
 
-
 		// If this stylesheet has overridem
 		if ($this->hasOverride()) {
 
@@ -315,9 +319,7 @@ class %BOOTCODE%_Stylesheet {
 			$override = $this->override();
 
 			// and let override stylesheet attach itself.
-			$override->attach();
-
-			return;
+			return $override->attach();
 		}
 
 		// Load manifest file.
@@ -330,15 +332,17 @@ class %BOOTCODE%_Stylesheet {
 
 		// Determine the type of stylesheet to attach
 		$type = $minified ? 'css' : 'minified';
+		$uris = array();
 
-		foreach ($manifest as $file => $sections) {
+		foreach ($manifest as $filename => $sections) {
 
 			// Get stylesheet uri.
-			$uri = $this->uri($file, $type);
+			$uri = $this->uri($filename, $type);
+			$uris[] = $uri;
 
 			// Stop because this stylesheet
 			// has been attached.
-			if (self::$attached[uri]) return;
+			if (self::$attached[$uri]) return;
 
 			// Attach to document head.
 			$document->addStyleSheet($uri);
@@ -347,6 +351,8 @@ class %BOOTCODE%_Stylesheet {
 			// we won't reattach it again.
 			self::$attached[$uri] = true;
 		}
+
+		return $uris;
 	}
 
 	public function purge() {
