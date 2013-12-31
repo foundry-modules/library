@@ -14,6 +14,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 	protected static $locations = array(
 		'user',
+		'override',
 		'site',
 		'site_base',
 		'admin',
@@ -45,6 +46,16 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		'module' => array(
 			'module',
 			'component',
+			'global'
+		),
+
+		'override' => array(
+			'override',
+			'component',
+			'global'
+		),
+
+		'foundry' => array(
 			'global'
 		)
 	);
