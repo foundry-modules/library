@@ -45,6 +45,12 @@ class %BOOTCODE%_Stylesheet {
 				$folder = constant($NS . 'USER_THEMES') . '/' . $this->location . '/' . $workspace[$this->location];
 				break;
 
+			case 'override':
+				$administator = ($this->location=='admin') ? 'administrator/' : '';
+				$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
+				$folder = constant($NS . 'JOOMLA') . "$administrator/templates/$template/html/$component/styles";
+				break;
+
 			case 'site':
 				$folder = constant($NS . 'SITE_THEMES') . '/' . $workspace['site'] . '/styles';
 				break;
@@ -59,12 +65,6 @@ class %BOOTCODE%_Stylesheet {
 
 			case 'admin_base':
 				$folder = constant($NS . 'ADMIN_THEMES') . '/' . $workspace['admin_base'] . '/styles';
-				break;
-
-			case 'override':
-				$administator = ($this->location=='admin') ? 'administrator/' : '';
-				$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
-				$folder = constant($NS . 'JOOMLA') . "$administrator/templates/$template/html/$component/styles";
 				break;
 
 			case 'module':

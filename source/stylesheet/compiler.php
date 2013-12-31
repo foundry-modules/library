@@ -135,14 +135,17 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		$this->setVariables($variables);
 
 		// Generate import directories
-		$importDir = array();
+		if (isset(self::$importOrdering[$currentLocation])) {
 
-		foreach (self::$importOrdering[$currentLocation] as $location) {
-			$importDir[] = $this->stylesheet->folder($location);
+			$importDir = array();
+
+			foreach (self::$importOrdering[$currentLocation] as $location) {
+				$importDir[] = $this->stylesheet->folder($location);
+			}
+
+			// Set import directories
+			$this->setImportDir($importDir);
 		}
-
-		// Set import directories
-		$this->setImportDir($importDir);
 
 		// Compile less stylesheet.
 		try {
