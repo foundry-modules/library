@@ -302,6 +302,53 @@ class %BOOTCODE%_Stylesheet {
 		return $hasOverride;
 	}
 
+	public function attach($minified=true) {
+
+		$document = JFactory::getDocument();
+		$app = JFactory::getApplication();
+
+
+		// If this stylesheet has overridem
+		if ($this->hasOverride()) {
+
+			// get override stylesheet instance,
+			$override = $this->override();
+
+			// and let override stylesheet attach itself.
+			$override->attach();
+
+			return;
+		}
+
+		// Load manifest file.
+		$manifest = $this->manifest();
+
+		// Fallback if unable to load manifest file
+		if (empty($manifest)) {
+			$manifest['style'] = array();
+		}
+
+		// Determine the type of stylesheet to attach
+		$type = $minified ? 'css' : 'minified';
+
+		foreach ($manifest as $file => $sections) {
+
+			// Get stylesheet uri.
+			$uri = $this->uri($file, $type);
+
+			// Stop because this stylesheet
+			// has been attached.
+			if (self::$attached[uri]) return;
+
+			// Attach to document head.
+			$document->addStyleSheet($uri);
+
+			// Remember this stylesheet so
+			// we won't reattach it again.
+			self::$attached[$uri] = true;
+		}
+	}
+
 	public function purge() {
 		// TODO: Purging
 	}
