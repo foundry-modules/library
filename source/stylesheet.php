@@ -454,12 +454,12 @@ class %BOOTCODE%_Stylesheet {
 				// then this file is missing.
 				if (isset($manifest[$filename])) {
 					$task->report("Missing file '$file'.");
-					$state = self::FILE_STATUS_REMOVED;
+					$state = self::FILE_STATUS_MISSING;
 
 				// Else this file has been removed.
 				} else {
-					$task->report("Deleted file '$file'.");
-					$$state = self::FILE_STATUS_MISSING;
+					$task->report("Removed file '$file'.");
+					$$state = self::FILE_STATUS_REMOVED;
 				}
 
 			} else {
@@ -469,7 +469,7 @@ class %BOOTCODE%_Stylesheet {
 
 				// Skip and generate a warning if unable to retrieve timestamp
 				if ($modifiedTime===false) {
-					$task->report("Unable to get modified time for '$file'.");
+					$task->report("Unknown modified time for '$file'.");
 					$$state = self::FILE_STATUS_UNKNOWN;
 				}
 
