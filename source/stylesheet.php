@@ -12,15 +12,20 @@ class %BOOTCODE%_Stylesheet {
 
 	private $ns = null;
 
+	private $_override;
+
 	public $workspace = array(
 		'site'       => null,
 		'site_base'  => null,
 		'admin'      => null,
 		'admin_base' => null,
-		'module'     => null
+		'module'     => null,
+		'override'   => null
 	);
 
 	public $location;
+
+	static $attached = array();
 
 	public function __construct($ns='', $workspace=array(), $location) {
 
@@ -54,6 +59,12 @@ class %BOOTCODE%_Stylesheet {
 
 			case 'admin_base':
 				$folder = constant($NS . 'ADMIN_THEMES') . '/' . $workspace['admin_base'] . '/styles';
+				break;
+
+			case 'override':
+				$administator = ($this->location=='admin') ? 'administrator/' : '';
+				$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
+				$folder = constant($NS . 'JOOMLA') . "$administrator/templates/$template/html/$component/styles";
 				break;
 
 			case 'module':
@@ -104,14 +115,23 @@ class %BOOTCODE%_Stylesheet {
 
 	public function file($filename, $type=null) {
 
-		// Normalize arguments
+		// When passing in an object.
+		// $this->file(array('location'=>'override', 'type'=>'css'));
+		if (is_array($filename)) {
+			extract($filename);
+		}
+
+		// When passing in type or filename + type pair.
+		// $this->file('css') returns 'path_to_location/style.css'
+		// $this->file('photos', 'css') returns 'path_to_location/photos.css'
 		if (is_null($type)) {
 			$type = $filename;
 			$filename = 'style';
 		}
 
 		// Get path to current folder
-		$file = $this->folder($this->location) . '/' . $filename;
+		$location = empty($location) ? $this->location : $location;
+		$file = $this->folder($location) . '/' . $filename;
 
 		switch ($type) {
 
@@ -129,6 +149,11 @@ class %BOOTCODE%_Stylesheet {
 				$file .= '.min.css';
 				break;
 
+			case 'manifest':
+			case 'json'
+				$file .= '.json';
+				break;
+
 			case 'fallback':
 				$file .= '.default.css';
 				break;
@@ -140,10 +165,6 @@ class %BOOTCODE%_Stylesheet {
 
 			case 'log';
 				$file .= '.log';
-				break;
-
-			case 'list':
-				$file .= '.list';
 				break;
 
 			case 'cache':
@@ -160,9 +181,11 @@ class %BOOTCODE%_Stylesheet {
 
 	public function uri($filename, $type=null) {
 
-		$NS  = $this->ns . '_';
+		$path = is_array($filename) ?
+					$this->file($filename) :
+					$this->file($filename, $type);
 
-		$path = $this->file($filename, $type);
+		$NS = $this->ns . '_';
 		$root = constant($NS . 'JOOMLA');
 		$root_uri = constant($NS . 'JOOMLA_URI');
 
@@ -239,7 +262,7 @@ class %BOOTCODE%_Stylesheet {
 		return $task;
 	}
 
-	public function filelist() {
+	public function manifest() {
 
 		$listFile = $this->file('list');
 		$fallback = array($this->file('minified'));
@@ -256,6 +279,27 @@ class %BOOTCODE%_Stylesheet {
 		$list = json_decode($content);
 
 		return is_array($list) ? $list : $fallback;
+	}
+
+	public function override() {
+
+		if (empty($this->_override)) {
+			$this->_override = new self($this->ns, $this->workspace, 'override');
+		}
+
+		return $this->_override;
+	}
+
+	public function hasOverride() {
+
+		static $hasOverride;
+
+		if (!isset($override)) {
+			$overrideFile = $this->file({'location' => 'override', 'type' => 'css'});
+			$hasOverride = JFile::exists($overrideFile);
+		}
+
+		return $hasOverride;
 	}
 
 	public function purge() {
