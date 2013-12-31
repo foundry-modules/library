@@ -34,8 +34,6 @@ class %BOOTCODE%_Stylesheet {
 	const FILE_STATUS_REMOVED   = 3;
 	const FILE_STATUS_UNKNOWN   = 4;
 
-	const STOP_ON_FIRST_OCCURENCE = true;
-
 	public function __construct($ns='', $workspace=array(), $location) {
 
 		$this->ns = $ns;
@@ -292,6 +290,30 @@ class %BOOTCODE%_Stylesheet {
 		return $manifestContent;
 	}
 
+	public function sections() {
+
+		static $sections;
+
+		if (isset($sections)) return $sections;
+
+		// Get manifest
+		$manifest = $this->manifest();
+
+		// If there is no manifest, return empty section.
+		if (is_null($manifest)) return array();
+
+		// Merge all sections in a single array
+		$sections = array();
+		foreach ($manifest as $filename => $_sections) {
+			$sections = array_merge($sections, $_sections);
+		}
+
+		// Remove duplicates
+		$sections = array_unique($sections);
+
+		return $sections;
+	}
+
 	public function override() {
 
 		if (empty($this->_override)) {
@@ -419,7 +441,7 @@ class %BOOTCODE%_Stylesheet {
 		foreach ($files as $filename => $timestamp) {
 
 			// For fast change detection. Used by hasChanges().
-			if ($stopOnFirstOccurence && $modified) break;
+			if ($fast && $modified) break;
 
 			// Get file path
 			$file = $this->file($this->filename, 'css');
@@ -479,7 +501,7 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		// If there are no changes in this stylesheet, report it.
-		if (!$hasChanges) {
+		if (!$modified) {
 			$task->report('There are no changes in this stylesheet.');
 		}
 
@@ -496,12 +518,12 @@ class %BOOTCODE%_Stylesheet {
 
 	public function hasChanges() {
 
-		$task = $this->changes(self::STOP_ON_FIRST_OCCURENCE);
+		$task = $this->changes(true);
 
 		// Unable to detect changes
 		if ($task->failed) return null;
 
-		return $task->result->modified > 0;
+		return $task->result->modified;
 	}
 
 	public function purge() {
