@@ -99,11 +99,8 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'current':
-				$folder = $this->folder($this->location);
-				break;
-
 			default:
-				$folder = null;
+				$folder = $this->folder($this->location);
 				break;
 		}
 
@@ -356,6 +353,23 @@ class %BOOTCODE%_Stylesheet {
 	}
 
 	public function purge() {
-		// TODO: Purging
+
+		// Create compile task object.
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Purge stylesheet cache & log files");
+
+		// Get a list of all cache & log files in this folder.
+		$files = JFolder::files($this->folder(), '(.cache|.log)$', true, true);
+
+		// Go through each of the manifest files.
+		foreach ($files as $file) {
+
+			if (JFile::delete($file)) {
+				$task->report("Deleted file '$file'.");
+			} else {
+				$task->report("Unable to delete '$file'.");
+			}
+		}
+
+		return $task->resolve();
 	}
 }
