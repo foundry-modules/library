@@ -26,7 +26,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 			'minified_target' => array(
 				'mode' => 'join'
 			)
-		),
+		)
 	);
 
 	protected static $presets = array(

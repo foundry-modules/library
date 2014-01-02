@@ -324,7 +324,7 @@ class %BOOTCODE%_Stylesheet {
 		// Simple stylesheet does not contain sections, the bare minimum is a single "style.css" file.
 		// If it has a "style.less" file, then this less file is considered the source stylesheet where "style.css" is compiled from, else "style.css" is considered the source stylesheet.
 		if (!is_array($manifestContent)) {
-			$manifestContent = array('style' => 'style');
+			$manifestContent = array('style' => array('style'));
 		}
 
 		return $manifestContent;
