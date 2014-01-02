@@ -35,11 +35,24 @@ class %BOOTCODE%_Stylesheet_Builder {
 			'compile' => array(
 				'enabled' => false
 			),
-		),
-
-		'cache' => array(
 			'minify' => array(
 				'enabled' => false
+			)
+		),
+
+		// Default settings as above
+		'cache' => array(),
+
+		'development' => array(
+
+			'minify' => array(
+				'enabled' => false
+			),
+
+			'build' => array(
+				'minified_target' => array(
+					'mode' => 'skip'
+				)
 			)
 		),
 
@@ -54,10 +67,6 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 		$this->stylesheet = $stylesheet;
 	}
-
-	// fast  = update style.css & join minified stylesheets.
-	// cache = cache compile all sections and proceed to fast mode.
-	// full  = compile all sections and proceed to fast mode.
 
 	public function run($preset='cache', $options=array()) {
 
@@ -156,7 +165,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 		foreach ($sections as $section) {
 
 			// Compile section
-			$subtask = $this->stylesheet->minify($section, $options);
+			$subtask = $this->stylesheet->compile($section, $options);
 			$task->subtasks[] = $subtask;
 
 			// Stop if section could not be compiled.
@@ -293,6 +302,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 				$content = $task->result;
 				break;
 
+			case 'skip':
 			default:
 				$task->report('Nothing to do.', 'info');
 				return $task;
