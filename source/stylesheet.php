@@ -244,25 +244,59 @@ class %BOOTCODE%_Stylesheet {
 		return $path . $fix;
 	}
 
+	public function compiler() {
+
+		static $compiler;
+
+		if (isset($compiler)) {
+			$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
+		}
+
+		return $compiler;
+	}
+
+	public function minifier() {
+
+		static $minifier;
+
+		if (isset($minifier)) {
+			$minifier = new %BOOTCODE%_Stylesheet_Minifier($this);
+		}
+
+		return $minifier;
+	}
+
+
+	public function builder() {
+
+		static $builder;
+
+		if (isset($builder)) {
+			$builder = new %BOOTCODE%_Stylesheet_Builder($this);
+		}
+
+		return $builder;
+	}
+
 	public function compile($section, $options=array()) {
 
-		$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
+		$compiler = $this->compiler();
 		$task = $compiler->run($section, $options);
 		return $task;
 	}
 
 	public function minify($section, $options=array()) {
 
-		$minifier = new %BOOTCODE%_Stylesheet_Minifier($this);
+		$minifier = $this->minifier();
 		$task = $minifier->run($section, $options);
 		return $task;
 	}
 
 	// $mode = fast | cache | full
-	public function build($mode='cache', $options=array()) {
+	public function build($preset='cache', $options=array()) {
 
-		$builder = new %BOOTCODE%_Stylesheet_Builder($this);
-		$task = $builder->run($mode, $options);
+		$builder = $this->builder();
+		$task = $builder->run($preset, $options);
 		return $task;
 	}
 
@@ -275,8 +309,16 @@ class %BOOTCODE%_Stylesheet {
 
 		$manifestFile = $this->file('manifest');
 
-		// No manifest file found.
-		if (!JFile::exists($manifestFile)) return null;
+		// If no manifest file found, assume simple stylesheet.
+		if (!JFile::exists($manifestFile)) {
+
+			// Simple stylesheet does not contain sections.
+			// the bare minimum is a single "style.css" file.
+			// If it has a "style.less" file, then this less file is considered the source stylesheet where "style.css" is compiled from, else "style.css" is considered the source stylesheet.
+			if (JFile::exists($manifestFile)) {
+				return array('style' => 'style');
+			}
+		}
 
 		// Read manifest file.
 		$manifestData = JFile::read($manifestFile);
@@ -299,12 +341,9 @@ class %BOOTCODE%_Stylesheet {
 		// Get manifest
 		$manifest = $this->manifest();
 
-		// If there is no manifest, return empty section.
-		if (is_null($manifest)) return array();
-
 		// Merge all sections in a single array
 		$sections = array();
-		foreach ($manifest as $filename => $_sections) {
+		foreach ($manifest as $group => $_sections) {
 			$sections = array_merge($sections, $_sections);
 		}
 
@@ -353,20 +392,14 @@ class %BOOTCODE%_Stylesheet {
 		// Load manifest file.
 		$manifest = $this->manifest();
 
-		// If there is no manifest file,
-		// assume folder has simple stylesheets.
-		if (empty($manifest)) {
-			$manifest['style'] = array();
-		}
-
 		// Determine the type of stylesheet to attach
-		$type = $minified ? 'css' : 'minified';
+		$type = $minified ? 'minified' : 'css';
 		$uris = array();
 
-		foreach ($manifest as $filename => $sections) {
+		foreach ($manifest as $group => $sections) {
 
 			// Get stylesheet uri.
-			$uri = $this->uri($filename, $type);
+			$uri = $this->uri($group, $type);
 			$uris[] = $uri;
 
 			// Stop because this stylesheet
