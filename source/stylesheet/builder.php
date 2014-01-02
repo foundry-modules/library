@@ -31,6 +31,9 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	protected static $presets = array(
 
+		// Generate index & join minified stylesheets.
+		// Ideal when you want to pick up CSS changes on page refresh.
+		// Suitable when running under static mode.
 		'fast' => array(
 			'compile' => array(
 				'enabled' => false
@@ -40,9 +43,14 @@ class %BOOTCODE%_Stylesheet_Builder {
 			)
 		),
 
-		// Default settings as above
+		// Cache compile, minify stylesheet, generate index and join minified stylesheet.
+		// Ideal when you want to pick up LESS changes on page refresh when loading minified stylesheets.
+		// Suitable for testing when running under static/optimized mode.
 		'cache' => array(),
 
+		// Cache compile & generate index.
+		// Ideal when you want to pick up LESS changes on page refresh.
+		// Suitable for development when running under development mode.
 		'development' => array(
 
 			'minify' => array(
@@ -56,6 +64,9 @@ class %BOOTCODE%_Stylesheet_Builder {
 			)
 		),
 
+		// Full compile, minify stylesheet, generate index and join minified stylesheets.
+		// Ideal when packaging theme stylesheets.
+		// Suitable for building.
 		'full' => array(
 			'compile' => array(
 				'force' => true
