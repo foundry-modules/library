@@ -8,7 +8,46 @@ class %BOOTCODE%_Stylesheet_Builder {
 	public $stylesheet = null;
 
 	protected static $defaultOptions = array(
-		'force' => false
+
+		'compile' => array(
+			'enabled' => true,
+			'force' => false
+		),
+
+		'minify' => array(
+			'enabled' => true
+		),
+
+		'build' => array(
+			'enabled' => true,
+			'target' => array(
+				'mode' => 'index'
+			),
+			'minified_target' => array(
+				'mode' => 'join'
+			)
+		),
+	);
+
+	protected static $presets = array(
+
+		'fast' => array(
+			'compile' => array(
+				'enabled' => false
+			),
+		),
+
+		'cache' => array(
+			'minify' => array(
+				'enabled' => false
+			)
+		),
+
+		'full' => array(
+			'compile' => array(
+				'force' => true
+			)
+		)
 	);
 
 	public function __construct($stylesheet) {
@@ -16,78 +55,70 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$this->stylesheet = $stylesheet;
 	}
 
-	public function run($mode='cache', $options=array()) {
+	// fast  = update style.css & join minified stylesheets.
+	// cache = cache compile all sections and proceed to fast mode.
+	// full  = compile all sections and proceed to fast mode.
+
+	public function run($preset='cache', $options=array()) {
 
 		// Create compile task object.
 		$this->task = new %BOOTCODE%_Foundry_Stylesheet_Task("Build stylesheet");
 		$task = $this->task;
 
 		// Normalize options
-		$options = array_merge(self::$defaultOptions, $options);
+		$options = array_merge_recursive(self::$defaultOptions, self::$presets[$mode], $options);
 
-		// Get main stylesheet file.
-		$in = $this->stylesheet->file('css');
+		// Get manifest file.
+		$manifest = $this->stylesheet->manifest();
 
-		// Stop if main stylesheet file is missing.
-		if (!JFile::exists($in)) {
-			return $task->reject("Missing main stylesheet file '$in'.");
-		}
+		foreach ($manifest as $group => $sections) {
 
-		// Get content of main stylesheet file.
-		$content = JFile::read($in);
+			// If we need to compile,
+			$compileOptions = $options['compile'];
 
-		// Stop if unable to read the main stylesheet file.
-		if ($content===false) {
-			return $task->reject("Unable to read main stylesheet file '$in'.");
-		}
+			if ($compileOptions['enabled']) {
 
-		// Get list of sections from stylesheet content.
-		$sections = %BOOTCODE%_Stylesheet_Analyzer::sections($content);
-
-		// Stop if there are no sections to compile.
-		if (count($sections) < 1) {
-			return $task->reject('Unable to retrieve stylesheet sections.');
-		}
-
-		// Get compiler options.
-		$options['force'] = $mode==='full';
-
-		// Cache compile / Full compile.
-		// Go through every stylesheet section and compile if necessary.
-		if ($mode!=='fast') {
-
-			// Full compile forces every section to be
-			// recompiled whether or not they were modified.
-			foreach ($sections as $section) {
-
-				// Compile section
-				$subtask = $this->stylesheet->compile($section, $options);
-
-				// Store subtask
+				// then compile all sections for this group.
+				$subtask = $this->compileGroup($group);
 				$task->subtasks[] = $subtask;
 
-				// Stop building if one of the subtask failed.
+				// If failed, stop.
 				if ($subtask->failed) {
-					return $task->reject("An error occured while compiling section '$section'.");
+					$task->reject();
+					break;
 				}
 			}
-		}
 
-		// Fast compile
-		// If minify is on, join minified stylesheets together.
-		// If minify is off, nothing to do.
-		if ($options['$minify']) {
+			// If we need to minify,
+			$minifyOptions = $options['minify'];
 
-			// Detect changes in minified stylesheets.
-			$detectTask = $this->detectChanges();
-			$task->subtasks[] = $detectTask;
+			if ($minifyOptions['enabled']) {
 
-			// If there is a changes in minified stylesheets,
-			if ($joinTask->result===true) {
+				// then minify all sections for this group.
+				$subtask = $this->minifyGroup($group, $minifyOptions);
+				$task->subtasks[] = $subtask;
 
-				// Join minified stylesheets together.
-				$joinTask = $this->joinMinifiedTask($sections);
-				$task->subtasks[] = $joinTask;
+				// If failed, stop.
+				if ($subtask->failed) {
+					$task->reject();
+					break;
+				}
+			}
+
+			// If we need to build,
+			$buildOptions = $options['build'];
+
+			if ($buildOptions['enabled']) {
+
+				// then build this group.
+				$subtask = $this->buildGroup($group, $buildOptions);
+				$task->subtasks[] = $subtask;
+
+				// If failed, stop.
+				if ($subtask->failed) {
+					$task->reject();
+					break;
+				}
 			}
 		}
 
@@ -102,70 +133,202 @@ class %BOOTCODE%_Stylesheet_Builder {
 		return $task->resolve();
 	}
 
-	public function detectChanges() {
+	public function compileGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task('Detect changes in minified stylesheets');
-		$task->result = false;
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Compile all sections for group '$group'");
 
-		$cacheFile = $this->stylesheet->file('cache');
-		$cache = null;
+		// Get manifest
+		$manifest = $this->stylesheet->manifest();
 
-		if (!JFile::exists($cacheFile)) {
-
-			$cacheContent = JFile::read($cacheFile);
-
-			if ($cacheContent===false) {
-				$task->report("Unable to read existing cache file '$cacheFile'.", %BOOTCODE%_Foundry_Stylesheet_Task::MESSAGE_INFO);
-			} else {
-				$cache = json_decode($cacheContent);
-			}
+		// Stop if group does not exist in stylesheet manifest.
+		if (!isset($manifest['group'])) {
+			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
 		}
 
-		if (!is_array($cache)) {
-			$task->report('Incompatible style cache structure or invalid cache file was provided.');
-			$task->result = true;
-			return $task->reject();
+		// Get sections
+		$sections = $manifest['group'];
+
+		// Stop if there are no sections.
+		if (count($sections) < 1) {
+			return $task->reject("No available sections to compile.");
 		}
 
-		$files = $cache->files;
-		foreach ($files as $file => $timestamp) {
+		foreach ($sections as $section) {
 
-			// If the file does not exist anymore, template has changed.
-			if (!JFile::exists($file)) {
-				$task->report("Missing file '$file'.");
-				$task->result = true;
-				return $task->reject();
-			}
+			// Compile section
+			$subtask = $this->stylesheet->minify($section, $options);
+			$task->subtasks[] = $subtask;
 
-			// Retrieve file's modified time
-			$modified = filemtime($file);
-
-			// Skip and generate a warning if unable to retrieve timestamp
-			if ($modified===false) {
-				$task->report("Unable to get modified time for '$file'.");
-				continue;
-			}
-
-			if ($timestamp < $modified) {
-				$task->report("Modified file found '$file'.");
-				return $task->resolve();
+			// Stop if section could not be compiled.
+			if ($subtask->failed) {
+				return $task->reject("An error occured while compiling section '$section'.");
 			}
 		}
-
-		$task->report('There are no changes in minified stylesheets.');
 
 		return $task->resolve();
 	}
 
-	public function joinMinifiedFiles($sections) {
+	public function minifyGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task('Join minified stylesheets');
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Minify all sections for group '$group'");
+
+		// Get manifest
+		$manifest = $this->stylesheet->manifest();
+
+		// Stop if group does not exist in stylesheet manifest.
+		if (!isset($manifest['group'])) {
+			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
+		}
+
+		// Get sections
+		$sections = $manifest['group'];
+
+		// Stop if there are no sections.
+		if (count($sections) < 1) {
+			return $task->reject("No available sections to compile.");
+		}
+
+		foreach ($sections as $section) {
+
+			// Compile section
+			$subtask = $this->stylesheet->minify($section, $options);
+			$task->subtasks[] = $subtask;
+
+			// Stop if section could not be minified.
+			if ($subtask->failed) {
+				return $task->reject("An error occured while compiling section '$section'.");
+			}
+		}
+	}
+
+	public function buildGroup($group, $options=array()) {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Building group '$group'");
+
+		// Get manifest
+		$manifest = $this->stylesheet->manifest();
+
+		// Stop if group does not exist in stylesheet manifest.
+		if (!isset($manifest['group'])) {
+			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
+		}
+
+		// Get sections
+		$sections = $manifest['group'];
+
+		// Stop if there are no sections.
+		if (count($sections) < 1) {
+			return $task->reject("No available sections to minify.");
+		}
+
+		// If this is a simple stylesheet, just minify stylesheet.
+		if ($group=='style' && $sections[0]=='style') {
+
+			$subtask = $this->stylesheet->minify('style');
+			$task->subtasks[] = $subtask;
+
+			// Stop if minifying stylesheet fail.
+			if ($subtask->failed) {
+				return $task->reject();
+			}
+
+		} else {
+
+			// Write target.
+			$type = 'css';
+			$mode = $options['target']['mode'];
+
+			$subtask = $this->writeTarget($group, $type, $mode);
+			$task->subtasks[] = $subtask;
+
+			// Stop if writing target failed.
+			if ($subtask->failed) {
+				return $task->reject();
+			}
+
+			// Write minified target.
+			$type = 'minified';
+			$mode = $options['minified_target']['mode'];
+
+			$subtask = $this->writeTarget($group, $type, $mode);
+			$task->subtasks[] = $subtask;
+
+			// Stop if writing minified target failed.
+			if ($subtask->failed) {
+				return $task->reject();
+			}
+		}
+
+		return $task->resolve();
+	}
+
+	public function writeTarget($group, $type, $mode) {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Writing $type target for '$group'.");
+
+		$file = $this->stylesheet->file($group, $type);
+		$content = '';
+
+		switch ($options['minified_target']['mode']) {
+
+			case 'index':
+				$subtask = $this->generateIndex($sections, $type);
+				$task->subtasks[] = $subtask;
+
+				if ($subtask->failed) {
+					return $task->reject();
+				}
+
+				$content = $task->result;
+				break;
+
+			case 'join':
+				$subtask = $this->joinFiles($sections, $type);
+				$task->subtasks[] = $subtask;
+
+				if ($subtask->failed) {
+					return $task->reject();
+				}
+
+				$content = $task->result;
+				break;
+
+			default:
+				$task->report('Nothing to do.', 'info');
+				return $task;
+		}
+
+		if (!JFile::write($file, $content) {
+			return $task->reject("Unable to write to file '$file'");
+		}
+
+		return $task->resolve();
+	}
+
+	public function generateIndex($sections=array(), $type='css') {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Generate index for $type sections");
+
+		$index = '';
+		foreach ($sections as $section) {
+			$filename = basename($this->stylesheet->file($section, $type));
+			$index .= "@import '$filename'\n";
+		}
+
+		$task->result = $index;
+
+		return $task->resolve();
+	}
+
+	public function joinFiles($sections=array(), $type='css') {
+
+		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Join $type sections");
 
 		$content = '';
 
 		foreach ($sections as $section) {
 
-			$sectionFile = $this->stylesheet->file($section, 'minified');
+			$sectionFile = $this->stylesheet->file($section, $type);
 
 			if (!JFile::exists($sectionFile)) {
 				return $task->reject("Missing minified section file '$sectionFile'.");
@@ -180,29 +343,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 			$content .= $sectionContent;
 		}
 
-		$blocks = %BOOTCODE%_Stylesheet_Analyzer::split($content);
-		$files  = array();
-
-		foreach ($blocks as $i => $block) {
-
-			$filename = 'style' . (($i > 0) ? $i : '');
-
-			// Write to 'style.min.css'
-			$minifiedFile = $this->stylesheet->file($filename, 'minified');
-			$files[] = $file;
-
-			if (!JFile::write($minifiedFile, $block)) {
-				return $task->reject("An error occured while writing minified file '$file'.");
-			}
-		}
-
-		// Write file list to 'style.list'
-		$listFile = $this->stylesheet->file('list');
-		$list = json_encode($files);
-
-		if (!JFile::write($listFile, $list)) {
-			return $task->reject("An error occured while writing file list '$file'.");
-		}
+		$task->result = $content;
 
 		return $task->resolve();
 	}
