@@ -82,11 +82,11 @@ class %BOOTCODE%_Stylesheet_Builder {
 	public function run($preset='cache', $options=array()) {
 
 		// Create compile task object.
-		$this->task = new %BOOTCODE%_Foundry_Stylesheet_Task("Build stylesheet");
+		$this->task = new %BOOTCODE%_Stylesheet_Task("Build stylesheet");
 		$task = $this->task;
 
 		// Normalize options
-		$options = array_merge_recursive(self::$defaultOptions, self::$presets[$mode], $options);
+		$options = array_merge_recursive(self::$defaultOptions, self::$presets[$preset], $options);
 
 		// Get manifest file.
 		$manifest = $this->stylesheet->manifest();
@@ -143,7 +143,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 		}
 
 		// Generate log file
-		$logFile = $this->file('log');
+		$logFile = $this->stylesheet->file('log');
 		$logContent = $task->toJSON();
 
 		if (!JFile::write($logFile, $logContent)) {
@@ -155,7 +155,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function compileGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Compile all sections for group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Compile all sections for group '$group'");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -190,7 +190,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function minifyGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Minify all sections for group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Minify all sections for group '$group'");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -223,7 +223,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function buildGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Building group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Building group '$group'");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -284,7 +284,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function writeTarget($group, $type, $mode) {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Writing $type target for '$group'.");
+		$task = new %BOOTCODE%_Stylesheet_Task("Writing $type target for '$group'.");
 
 		$file = $this->stylesheet->file($group, $type);
 		$content = '';
@@ -319,7 +319,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 				return $task;
 		}
 
-		if (!JFile::write($file, $content) {
+		if (!JFile::write($file, $content)) {
 			return $task->reject("Unable to write to file '$file'");
 		}
 
@@ -328,7 +328,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function generateIndex($sections=array(), $type='css') {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Generate index for $type sections");
+		$task = new %BOOTCODE%_Stylesheet_Task("Generate index for $type sections");
 
 		$index = '';
 		foreach ($sections as $section) {
@@ -343,7 +343,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function joinFiles($sections=array(), $type='css') {
 
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Join $type sections");
+		$task = new %BOOTCODE%_Stylesheet_Task("Join $type sections");
 
 		$content = '';
 

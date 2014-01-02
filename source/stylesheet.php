@@ -53,8 +53,9 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'override':
-				$administator = ($this->location=='admin') ? 'administrator/' : '';
+				$administrator = ($this->location=='admin') ? 'administrator/' : '';
 				$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
+				$template = $this->workspace['override'];
 				$folder = constant($NS . 'JOOMLA') . "$administrator/templates/$template/html/$component/styles";
 				break;
 
@@ -154,7 +155,7 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'manifest':
-			case 'json'
+			case 'json':
 				$file .= '.json';
 				break;
 
@@ -248,7 +249,7 @@ class %BOOTCODE%_Stylesheet {
 
 		static $compiler;
 
-		if (isset($compiler)) {
+		if (!isset($compiler)) {
 			$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
 		}
 
@@ -259,7 +260,7 @@ class %BOOTCODE%_Stylesheet {
 
 		static $minifier;
 
-		if (isset($minifier)) {
+		if (!isset($minifier)) {
 			$minifier = new %BOOTCODE%_Stylesheet_Minifier($this);
 		}
 
@@ -271,7 +272,7 @@ class %BOOTCODE%_Stylesheet {
 
 		static $builder;
 
-		if (isset($builder)) {
+		if (!isset($builder)) {
 			$builder = new %BOOTCODE%_Stylesheet_Builder($this);
 		}
 
@@ -309,25 +310,22 @@ class %BOOTCODE%_Stylesheet {
 
 		$manifestFile = $this->file('manifest');
 
-		// If no manifest file found, assume simple stylesheet.
-		if (!JFile::exists($manifestFile)) {
+		// If manifest file exists,
+		if (JFile::exists($manifestFile)) {
 
-			// Simple stylesheet does not contain sections.
-			// the bare minimum is a single "style.css" file.
-			// If it has a "style.less" file, then this less file is considered the source stylesheet where "style.css" is compiled from, else "style.css" is considered the source stylesheet.
-			if (JFile::exists($manifestFile)) {
-				return array('style' => 'style');
-			}
+			// read manifest file,
+			$manifestData = JFile::read($manifestFile);
+
+			// and parse manifest data.
+			$manifestContent = json_decode($manifestData, true);
 		}
 
-		// Read manifest file.
-		$manifestData = JFile::read($manifestFile);
-
-		// Manifest could not be read.
-		if (!$manifestData) return null;
-
-		// Parse manifest data
-		$manifestContent = json_decode($manifestData);
+		// If no manifest file found or manifest could not be parsed, assume simple stylesheet.
+		// Simple stylesheet does not contain sections, the bare minimum is a single "style.css" file.
+		// If it has a "style.less" file, then this less file is considered the source stylesheet where "style.css" is compiled from, else "style.css" is considered the source stylesheet.
+		if (!is_array($manifestContent)) {
+			$manifestContent = array('style' => 'style');
+		}
 
 		return $manifestContent;
 	}
@@ -367,7 +365,7 @@ class %BOOTCODE%_Stylesheet {
 		static $hasOverride;
 
 		if (!isset($override)) {
-			$overrideFile = $this->file({'location' => 'override', 'type' => 'css'});
+			$overrideFile = $this->file(array('location' => 'override', 'type' => 'css'));
 			$hasOverride = JFile::exists($overrideFile);
 		}
 
@@ -404,7 +402,7 @@ class %BOOTCODE%_Stylesheet {
 
 			// Stop because this stylesheet
 			// has been attached.
-			if (self::$attached[$uri]) return;
+			if (isset(self::$attached[$uri])) return;
 
 			// Attach to document head.
 			$document->addStyleSheet($uri);
@@ -465,7 +463,7 @@ class %BOOTCODE%_Stylesheet {
 
 			$filename = $section . '.css';
 
-			if (!isset($files[$filename]) {
+			if (!isset($files[$filename])) {
 				$files[$filename] = null;
 			}
 		}
@@ -522,7 +520,7 @@ class %BOOTCODE%_Stylesheet {
 			$changes[$file] = $state;
 
 			// Increase state count
-			if (isset($status[$state]) {
+			if (isset($status[$state])) {
 				$status[$state] = 0;
 			}
 			$status[$state]++;
