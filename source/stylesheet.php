@@ -496,7 +496,7 @@ class %BOOTCODE%_Stylesheet {
 			} else {
 
 				// Retrieve file's modified time
-				$modifiedTime = filemtime($file);
+				$modifiedTime = @filemtime($file);
 
 				// Skip and generate a warning if unable to retrieve timestamp
 				if ($modifiedTime===false) {

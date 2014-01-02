@@ -152,7 +152,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 			$file = $this->stylesheet->file($section, 'css');
 			$filename = basename($file);
-			$modifiedTime = filemtime($file);
+			$modifiedTime = @filemtime($file);
 
 			// Skip unreadable file
 			if ($modifiedTime===false) {
