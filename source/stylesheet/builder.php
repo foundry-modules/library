@@ -142,6 +142,38 @@ class %BOOTCODE%_Stylesheet_Builder {
 			}
 		}
 
+		// Generate cache file
+		$sections = $this->stylesheet->sections();
+		$files = array();
+		$cache = array();
+
+		// Collect modified time for every section's css file
+		foreach($sections as $section) {
+
+			$file = $this->stylesheet->file($section, 'css');
+			$filename = basename($file);
+			$modifiedTime = filemtime($file);
+
+			// Skip unreadable file
+			if ($modifiedTime===false) {
+				$task->report("Unable to get modified time for '$file'");
+				continue;
+			}
+
+			$files[$filename] = $modifiedTime;
+		}
+
+		// Build cache data
+		$cache['files'] = $files;
+
+		// Generate cache file
+		$cacheFile = $this->stylesheet->file('cache');
+		$cacheContent = json_encode($cache);
+
+		if (!JFile::write($cacheFile, $cacheContent)) {
+			$task->report("Unable to write cache file '$cacheFile'");
+		}
+
 		// Generate log file
 		$logFile = $this->stylesheet->file('log');
 		$logContent = $task->toJSON();

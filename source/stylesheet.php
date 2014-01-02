@@ -483,7 +483,7 @@ class %BOOTCODE%_Stylesheet {
 
 				// If the file still exist in the manifest,
 				// then this file is missing.
-				if (isset($manifest[$filename])) {
+				if (isset($sections[$filename])) {
 					$task->report("Missing file '$file'.");
 					$state = self::FILE_STATUS_MISSING;
 
