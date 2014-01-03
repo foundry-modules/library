@@ -193,12 +193,12 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$manifest = $this->stylesheet->manifest();
 
 		// Stop if group does not exist in stylesheet manifest.
-		if (!isset($manifest['group'])) {
+		if (!isset($manifest[$group])) {
 			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
 		}
 
 		// Get sections
-		$sections = $manifest['group'];
+		$sections = $manifest[$group];
 
 		// Stop if there are no sections.
 		if (count($sections) < 1) {
@@ -228,12 +228,12 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$manifest = $this->stylesheet->manifest();
 
 		// Stop if group does not exist in stylesheet manifest.
-		if (!isset($manifest['group'])) {
+		if (!isset($manifest[$group])) {
 			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
 		}
 
 		// Get sections
-		$sections = $manifest['group'];
+		$sections = $manifest[$group];
 
 		// Stop if there are no sections.
 		if (count($sections) < 1) {
@@ -261,12 +261,12 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$manifest = $this->stylesheet->manifest();
 
 		// Stop if group does not exist in stylesheet manifest.
-		if (!isset($manifest['group'])) {
+		if (!isset($manifest[$group])) {
 			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
 		}
 
 		// Get sections
-		$sections = $manifest['group'];
+		$sections = $manifest[$group];
 
 		// Stop if there are no sections.
 		if (count($sections) < 1) {
