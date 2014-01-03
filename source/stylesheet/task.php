@@ -130,7 +130,7 @@ class %BOOTCODE%_Stylesheet_Task {
 		$task['subtasks'] = array();
 
 		foreach($this->subtasks as $subtask) {
-			$task['subtasks'] = $subtask->toArray();
+			$task['subtasks'][] = $subtask->toArray();
 		}
 
 		return $task;
