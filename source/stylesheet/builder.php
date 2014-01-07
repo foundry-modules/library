@@ -251,6 +251,8 @@ class %BOOTCODE%_Stylesheet_Builder {
 				return $task->reject("An error occured while compiling section '$section'.");
 			}
 		}
+
+		return $task->resolve();
 	}
 
 	public function buildGroup($group, $options=array()) {
@@ -321,7 +323,23 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$file = $this->stylesheet->file($group, $type);
 		$content = '';
 
-		switch ($options['minified_target']['mode']) {
+		// Get manifest
+		$manifest = $this->stylesheet->manifest();
+
+		// Stop if group does not exist in stylesheet manifest.
+		if (!isset($manifest[$group])) {
+			return $task->reject("Group '$group' does not exist in stylesheet manifest.");
+		}
+
+		// Get sections
+		$sections = $manifest[$group];
+
+		// Stop if there are no sections.
+		if (count($sections) < 1) {
+			return $task->reject("No available sections to write target.");
+		}
+
+		switch ($mode) {
 
 			case 'index':
 				$subtask = $this->generateIndex($sections, $type);
@@ -331,7 +349,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 					return $task->reject();
 				}
 
-				$content = $task->result;
+				$content = $subtask->result;
 				break;
 
 			case 'join':
@@ -342,7 +360,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 					return $task->reject();
 				}
 
-				$content = $task->result;
+				$content = $subtask->result;
 				break;
 
 			case 'skip':
@@ -365,7 +383,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$index = '';
 		foreach ($sections as $section) {
 			$filename = basename($this->stylesheet->file($section, $type));
-			$index .= "@import '$filename'\n";
+			$index .= "@import '$filename';\n";
 		}
 
 		$task->result = $index;
@@ -387,7 +405,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 				return $task->reject("Missing minified section file '$sectionFile'.");
 			}
 
-			$sectionContent = JFile::read($file);
+			$sectionContent = JFile::read($sectionFile);
 
 			if ($sectionContent===false) {
 				return $task->reject("Unable to read minified section file '$sectionFile'.");
