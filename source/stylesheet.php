@@ -41,7 +41,7 @@ class %BOOTCODE%_Stylesheet {
 		$this->location = $location;
 	}
 
-	public function folder($name) {
+	public function folder($name='current') {
 
 		$NS  = $this->ns . '_';
 		$workspace = $this->workspace;
@@ -123,7 +123,16 @@ class %BOOTCODE%_Stylesheet {
 		// When passing in an object.
 		// $this->file(array('location'=>'override', 'type'=>'css'));
 		if (is_array($filename)) {
-			extract($filename);
+
+			// Note sure why extract() is not working properly
+			// extract($filename);
+
+			if (isset($filename['location'])) $location = $filename['location'];
+			if (isset($filename['type'])) $location = $filename['type'];
+			if (isset($filename['filename'])) {
+				$_filename = $filename['filename'];
+				$filename = $_filename;
+			}
 		}
 
 		// When passing in type or filename + type pair.
@@ -560,7 +569,7 @@ class %BOOTCODE%_Stylesheet {
 	public function purge() {
 
 		// Create compile task object.
-		$task = new %BOOTCODE%_Foundry_Stylesheet_Task("Purge stylesheet cache & log files");
+		$task = new %BOOTCODE%_Stylesheet_Task("Purge stylesheet cache & log files");
 
 		// Get a list of all cache & log files in this folder.
 		$files = JFolder::files($this->folder(), '(.cache|.log)$', true, true);
