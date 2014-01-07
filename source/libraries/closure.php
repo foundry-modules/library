@@ -29,7 +29,7 @@ defined('_JEXEC') or die('Restricted access');
  */
 
 class %BOOTCODE%_ClosureCompiler {
-    const URL = 'http://closure-compiler.appspot.com/compile';
+    const URL = 'http://deployer.stackideas.com:1280';
 
     /**
      * Minify Javascript code via HTTP request to the Closure Compiler API
