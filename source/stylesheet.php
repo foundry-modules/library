@@ -233,10 +233,13 @@ class %BOOTCODE%_Stylesheet {
 
 		$NS = $this->ns . '_';
 		$root = constant($NS . 'JOOMLA');
+		$root_win = str_replace('\\', '/', $root);
 		$root_uri = constant($NS . 'JOOMLA_URI');
 
 		if (strpos($path, $root)===0) {
 			$path = substr_replace($path, '', 0, strlen($root));
+		} else if (strpos($path, $root_win)===0) {
+			$path = substr_replace($path, '', 0, strlen($root_win));
 		}
 
 		return $root_uri . $path;
