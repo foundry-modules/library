@@ -123,28 +123,50 @@ class %BOOTCODE%_Stylesheet {
 		// When passing in an object.
 		// $this->file(array('location'=>'override', 'type'=>'css'));
 		if (is_array($filename)) {
-
-			// Note sure why extract() is not working properly
-			// extract($filename);
-
-			if (isset($filename['location'])) $location = $filename['location'];
-			if (isset($filename['type'])) $location = $filename['type'];
-			if (isset($filename['filename'])) {
-				$_filename = $filename['filename'];
-				$filename = $_filename;
-			}
-		}
+			$options = $filename;
+			extract($options);
 
 		// When passing in type or filename + type pair.
 		// $this->file('css') returns 'path_to_location/style.css'
 		// $this->file('photos', 'css') returns 'path_to_location/photos.css'
-		if (is_null($type)) {
-			$type = $filename;
-			$filename = 'style';
+		} else {
+
+			$numargs = func_num_args();
+			if ($numargs===1) {
+				$type = $filename;
+				$filename = 'style';
+			}
 		}
 
-		// Get path to current folder
+		// Normalize remaining arugments
 		$location = empty($location) ? $this->location : $location;
+		$seek     = empty($seek)     ? false           : $seek;
+
+		// If we should seek for the file according
+		// to the list of import ordering locations.
+		if ($seek) {
+
+			// Get list of import ordering locations
+			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location);
+
+			// Go through each of the location
+			foreach ($locations as $location) {
+
+				$file = $this->file(array(
+					'location' => $location,
+					'filename' => $filename,
+					'type' => $type
+				));
+
+				// and return if the file exists
+				if (JFile::exists($file)) return $file;
+			}
+
+			// If file could not be found, return false
+			return false;
+		}
+
+		// Construct filename without extension
 		$file = $this->folder($location) . '/' . $filename;
 
 		switch ($type) {
@@ -198,6 +220,9 @@ class %BOOTCODE%_Stylesheet {
 		$path = is_array($filename) ?
 					$this->file($filename) :
 					$this->file($filename, $type);
+
+		// This may be false if it involved seeking.
+		if ($path===false) return false;
 
 		$NS = $this->ns . '_';
 		$root = constant($NS . 'JOOMLA');

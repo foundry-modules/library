@@ -68,6 +68,15 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		$this->stylesheet = $stylesheet;
 	}
 
+	public static function importOrdering($location) {
+
+		if (isset(self::$importOrdering[$location])) {
+			$locations = self::$importOrdering[$location];
+		}
+
+		return (empty($locations)) ? array() : $locations;
+	}
+
 	public function run($section, $options=array()) {
 
 		// Create new task
@@ -81,7 +90,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		$currentLocation = $this->stylesheet->location;
 
 		// Get paths
-		$in    = $this->stylesheet->file($section, 'less');
+		$in    = $this->stylesheet->file(array('filename' => $section, 'type' => 'less', 'seek' => true));
 		$out   = $this->stylesheet->file($section, 'css');
 		$cache = $this->stylesheet->file($section, 'cache');
 		$root  = dirname($out);
