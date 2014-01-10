@@ -120,27 +120,34 @@ class %BOOTCODE%_Stylesheet {
 
 	public function file($filename, $type=null) {
 
+		// Default file options
+		$defaultOptions = array(
+			'location' => $this->location,
+			'filename' => 'style',
+			'type' => $type,
+			'seek' => false
+		);
+
+		// Current options
+		$options = array();
+
 		// When passing in an object.
 		// $this->file(array('location'=>'override', 'type'=>'css'));
 		if (is_array($filename)) {
 			$options = $filename;
-			extract($options);
 
 		// When passing in type or filename + type pair.
 		// $this->file('css') returns 'path_to_location/style.css'
 		// $this->file('photos', 'css') returns 'path_to_location/photos.css'
 		} else {
-
 			$numargs = func_num_args();
-			if ($numargs===1) {
-				$type = $filename;
-				$filename = 'style';
-			}
+			if ($numargs===1) $options['type'] = $filename;
+			if ($numargs===2) $options['filename'] = $filename;
 		}
 
-		// Normalize remaining arugments
-		$location = empty($location) ? $this->location : $location;
-		$seek     = empty($seek)     ? false           : $seek;
+		// Extract options as variables
+		$options = array_merge($defaultOptions, $options);
+		extract($options);
 
 		// If we should seek for the file according
 		// to the list of import ordering locations.
@@ -392,6 +399,38 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		return $this->_override;
+	}
+
+	public function overrides() {
+
+		static $overrides;
+
+		if (isset($overrides)) return $overrides;
+
+		// Prepare keywords for path building.
+		$NS  = $this->ns . '_';
+		$administrator = ($this->location=='admin') ? 'administrator/' : '';
+		$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
+
+		// Determine path for Joomla template folder because frontend and backend is different.
+		$templateFolder = constant($NS . 'JOOMLA') . "$administrator/templates";
+
+		// Get a list of template folders.
+		$templates = JFolder::folders($templateFolder);
+
+		// Go through each template folder to see if there is a stylesheet override.
+		$overrides = array();
+		foreach ($templates as $template) {
+
+			$overrideFolder = "$templateFolder/$template/html/$component/styles";
+
+			// If override folder exists, add to override list.
+			if (JFolder::exists($overrideFolder)) {
+				$overrides[] = $template;
+			}
+		}
+
+		return $overrides;
 	}
 
 	public function hasOverride() {
