@@ -345,6 +345,36 @@ class %BOOTCODE%_Stylesheet {
 		return $task;
 	}
 
+	public function type() {
+
+		static $type;
+
+		if (isset($type)) return $type;
+
+		// ATS
+		$manifestFile = $this->file('manifest');
+		if (JFile::exists($manifestFile)) {
+			$type = 'ats';
+			return $type;
+		}
+
+		// LESS
+		$lessFile = $this->file('less');
+		if (JFile::exists($lessFile)) {
+			$type = 'less';
+			return $type;
+		}
+
+		// CSS
+		$cssFile = $this->file('css');
+		if (JFile::exists($cssFile)) {
+			$type = 'css';
+			return $type;
+		}
+
+		return false;
+	}
+
 	public function manifest() {
 
 		static $manifestContent;
