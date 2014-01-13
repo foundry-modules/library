@@ -411,7 +411,7 @@ class %BOOTCODE%_Stylesheet {
 		if (isset($overrides)) return $overrides;
 
 		// Prepare keywords for path building.
-		$NS  = $this->ns . '_';
+		$NS = $this->ns . '_';
 		$administrator = ($this->location=='admin') ? 'administrator/' : '';
 		$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
 
@@ -446,6 +446,34 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		return $hasOverride;
+	}
+
+	public function modules() {
+
+		static $modules;
+
+		if (isset($modules)) return $modules;
+
+		// Prepare keywords for path building.
+		$NS = $this->ns . '_';
+		$modulePath = constant($NS . 'JOOMLA_MODULES');
+		$modulePrefix = 'mod_' . constant($NS . 'IDENTIFIER');
+
+		// Get a list of modules that starts with the component identifier,
+		// e.g. mod_easysocial, mod_easyblog, mod_easydiscuss.
+		$_modules = JFolder::folders($modulePath, $modulePrefix);
+
+		// Go through each module folder and see if there is a styles folder
+		$modules = array();
+		foreach ($_modules as $module) {
+
+			// If styles folder exists, add to module list.
+			if (JFolder::exists("$modulePath/$module/styles")) {
+				$modules[] = $module;
+			}
+		}
+
+		return $modules;
 	}
 
 	public function attach($minified=true, $allowOverride=true) {
