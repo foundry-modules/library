@@ -11,7 +11,7 @@ class %BOOTCODE%_Stylesheet_Task {
 	const STATE_ERROR   = 'error';
 	const STATE_PENDING = 'pending';
 
-	// Compile summary
+	// Task summary
 	public $name;
 	public $state;
 	public $message = '';
@@ -20,13 +20,16 @@ class %BOOTCODE%_Stylesheet_Task {
 	public $subtasks = array();
 	public $result;
 
-	// Compile profiling
+	// Task profiling
 	public $time_start;
 	public $time_end;
 	public $time_total;
 	public $mem_start;
 	public $mem_end;
 	public $mem_peak;
+
+	// Task reporting
+	public $output = null;
 
 	public function __construct($name='Task', $autostart=true) {
 
@@ -56,6 +59,9 @@ class %BOOTCODE%_Stylesheet_Task {
 		$this->mem_end    = memory_get_usage();
 		$this->mem_peak   = memory_get_peak_usage();
 		$this->report($message, $type);
+
+		// Write to log file
+		$this->save();
 
 		return $this;
 	}
@@ -136,8 +142,24 @@ class %BOOTCODE%_Stylesheet_Task {
 		return $task;
 	}
 
-	public function toJSON()
-	{
+	public function toJSON() {
+
 		return json_encode($this->toArray());
+	}
+
+	public function save($output=null) {
+
+		// If no output path given
+		if (is_null($output)) {
+
+			// Get output path from instance property
+			if (is_null($this->output)) return false;
+			$output = $this->output;
+		}
+
+		// Export log content
+		$content = $task->toJSON();
+
+		return JFile::write($output, $content);
 	}
 }

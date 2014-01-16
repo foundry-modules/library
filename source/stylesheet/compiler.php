@@ -81,7 +81,11 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		// Create new task
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
+
 		$task = $this->task;
+
+		// Write to a log file when this task is completed.
+		$task->output = $this->stylesheet->file($section, 'log');
 
 		// Normalize options
 		$options = array_merge(self::$defaultOptions, $options);
@@ -183,13 +187,6 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 			$cacheContent = json_encode($cacheAfter);
 			if (!JFile::write($cache, $cacheContent)) {
 				return $task->reject("An error occured while writing cache file '$cache'.");
-			}
-
-			// Write log file.
-			$log = $this->stylesheet->file($section, 'log');
-			$logContent = $task->toJSON();
-			if (!JFile::write($log, $logContent)) {
-				$task->report("An error occured while writing log file '$log'", 'warn');
 			}
 
 		// If there are no changes, skip writing stylesheet & cache file.
