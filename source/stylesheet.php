@@ -27,6 +27,13 @@ class %BOOTCODE%_Stylesheet {
 
 	static $attached = array();
 
+	static $filetypes = array(
+		'ats'     => array('css', 'minified'),
+		'less'    => array('less', 'css', 'minified'),
+		'css'     => array('css', 'minified'),
+		'section' => array('less', 'css', 'minified')
+	);
+
 	const FILE_STATUS_NEW       = -1;
 	const FILE_STATUS_UNCHANGED = 0;
 	const FILE_STATUS_MODIFIED  = 1;
@@ -43,7 +50,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function folder($name='current') {
 
-		$NS  = $this->ns . '_';
+		$NS = $this->ns . '_';
 		$workspace = $this->workspace;
 
 		switch ($name) {
@@ -169,8 +176,14 @@ class %BOOTCODE%_Stylesheet {
 				if (JFile::exists($file)) return $file;
 			}
 
-			// If file could not be found, return false
-			return false;
+			// If file could not be found, return file from current location.
+			$file = $this->file(array(
+				'location' => $this->location,
+				'filename' => $filename,
+				'type' => $type
+			));
+
+			return $file;
 		}
 
 		// Construct filename without extension
@@ -225,16 +238,31 @@ class %BOOTCODE%_Stylesheet {
 	public function uri($filename, $type=null) {
 
 		$path = is_array($filename) ?
+					$this->path($filename) :
+					$this->path($filename, $type);
+
+		$NS = $this->ns . '_';
+		$root_uri = constant($NS . 'JOOMLA_URI');
+
+		return $root_uri . '/' . $path;
+	}
+
+	public function path($filename, $type=null) {
+
+		$path = is_array($filename) ?
 					$this->file($filename) :
 					$this->file($filename, $type);
 
-		// This may be false if it involved seeking.
-		if ($path===false) return false;
+		$path = $this->strip_root($path);
+
+		return $path;
+	}
+
+	public function strip_root($path='') {
 
 		$NS = $this->ns . '_';
 		$root = constant($NS . 'JOOMLA');
 		$root_win = str_replace('\\', '/', $root);
-		$root_uri = constant($NS . 'JOOMLA_URI');
 
 		if (strpos($path, $root)===0) {
 			$path = substr_replace($path, '', 0, strlen($root));
@@ -242,7 +270,8 @@ class %BOOTCODE%_Stylesheet {
 			$path = substr_replace($path, '', 0, strlen($root_win));
 		}
 
-		return $root_uri . $path;
+		// Strip trailing slash
+		return substr($path, 1);
 	}
 
 	public function relative($dest, $root='', $dir_sep='/') {
@@ -372,7 +401,8 @@ class %BOOTCODE%_Stylesheet {
 			return $type;
 		}
 
-		return false;
+		// Fallback is always css
+		return 'css';
 	}
 
 	public function manifest() {
@@ -423,6 +453,118 @@ class %BOOTCODE%_Stylesheet {
 		$sections = array_unique($sections);
 
 		return $sections;
+	}
+
+	public function log($section='style') {
+
+		// If log file does not exist, stop.
+		$logFile = $this->file($section, 'log');
+		if (!JFile::exists($logFile)) return false;
+
+		// If log file could not be read, stop.
+		$logContent = JFile::read($logFile);
+		if (!$logContent) return false;
+
+		$log = json_decode($logContent, true);
+
+		return $log;
+	}
+
+	public function sectionId($section) {
+		return $this->location . '-' . $this->workspace[$this->location] . '-' . $section;
+	}
+
+	public function strip_folder($path, $folders=array()) {
+
+		static $folders;
+
+		// Generate a list of folders to strip
+		if (!isset($folders)) {
+
+			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location);
+			$folders = array();
+
+			foreach ($locations as $location) {
+				$folder     = $this->folder($location);
+				$folder_win = str_replace('\\', '/', $folder);
+				$folders[] = $folder;
+				$folders[] = $folder_win;
+			}
+		}
+
+		$found = false;
+		foreach($folders as $folder) {
+			if (strpos($path, $folder)===0) {
+				$path = substr_replace($path, '', 0, strlen($folder));
+				$found = true;
+				break;
+			}
+		}
+
+		// Fallback if folder was not stripped
+		if (!$found) $path = basename($path);
+
+		// Strip extension
+		$path = preg_replace("/\\.[^.\\s]{3,4}$/", "", $path);
+
+		// Strip trailing slash
+		return substr($path, 1);
+	}
+
+	public function imports($section) {
+
+		static $imports;
+		if (!isset($imports)) $imports = array();
+		if (isset($imports[$section])) return $imports[$section];
+
+		// If cache file does not exist, stop.
+		$cacheFile = $this->file($section, 'cache');
+		if (!JFile::exists($cacheFile)) return false;
+
+		// If unable to read file, stop.
+		$cacheContent = JFile::read($cacheFile);
+		if (!$cacheFile) return false;
+
+		// If cache structure is invalid, stop.
+		$cache = json_decode($cacheContent, true);
+		if (!is_array($cache)) return false;
+
+		$NS = $this->ns . '_';
+
+		$status = array();
+		$files  = $cache['files'];
+
+		foreach ($files as $file => $modified) {
+
+			// Properties
+			$name   = $this->strip_folder($file);
+			$path   = $this->strip_root($file);
+			$uri    = constant($NS . 'JOOMLA_URI') . '/' . $path;
+			$state  = 'ready';
+			$exists = JFile::exists($file);
+
+			// Missing file
+			if (!$exists) $state = 'missing';
+
+			// Modified file
+			$current = @filemtime($file);
+			if ($current > $modified) {
+				$state = 'modified';
+			}
+
+			$status[] = (object) array(
+				'name'     => $name,
+				'path'     => $path,
+				'uri'      => $uri,
+				'current ' => $current,
+				'modified' => $modified,
+				'state'    => $state
+			);
+		}
+
+		$imports[$section] = $status;
+
+		return $status;
 	}
 
 	public function override() {
@@ -547,6 +689,75 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		return $uris;
+	}
+
+	public function status($section='style') {
+
+		static $status;
+		if (!isset($status)) $status = array();
+		if (isset($status[$section])) return $status[$section];
+
+		// Stylesheet
+		if ($section=='style') {
+			$manifest  = $this->manifest();
+			$filenames = array_keys($manifest);
+			$type      = $this->type();
+
+		// Section
+		} else {
+			$filenames = array($section);
+			$type      = 'section';
+		}
+
+		$files = array();
+		$filetypes = self::$filetypes[$type];
+
+		foreach ($filenames as $filename) {
+
+			foreach ($filetypes as $filetype) {
+
+				// Options to get file path
+				$options = array(
+					'filename' => $filename,
+					'type'     => $filetype,
+					'seek'     => $type=='section' && $filetype=='less'
+				);
+
+				// Get properties of this file
+				$file     = $this->file($options);
+				$uri      = $this->uri($options);
+				$path     = $this->path($options);
+				$exists   = JFile::exists($file);
+				$size     = null;
+				$modified = null;
+				$state    = 'unknown';
+
+				if ($exists) {
+					$size     = @filesize($file);
+					$modified = @filemtime($file);
+					$state   = 'ready';
+				} else {
+					$state   = 'missing';
+				}
+
+				// Determine file status
+				// TODO: Merge "changes()" method within this method so we can track new/missing/modified files.
+
+				$files[] = (object) array(
+					'name'     => basename($file),
+					'path'     => $path,
+					'uri'      => $uri,
+					'exists'   => $exists,
+					'size'     => $size,
+					'modified' => $modified,
+					'state'    => $state
+				);
+			}
+		}
+
+		$status[$section] = $files;
+
+		return $files;
 	}
 
 	public function changes($fast=false) {
