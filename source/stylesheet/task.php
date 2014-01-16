@@ -158,7 +158,7 @@ class %BOOTCODE%_Stylesheet_Task {
 		}
 
 		// Export log content
-		$content = $task->toJSON();
+		$content = $this->toJSON();
 
 		return JFile::write($output, $content);
 	}

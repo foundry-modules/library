@@ -85,6 +85,9 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Build stylesheet");
 		$task = $this->task;
 
+		// Write to a log file when this task is completed.
+		$task->output = $this->stylesheet->file('log');
+
 		// Normalize options
 		$options = array_merge_recursive(self::$defaultOptions, self::$presets[$preset], $options);
 
@@ -172,14 +175,6 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 		if (!JFile::write($cacheFile, $cacheContent)) {
 			$task->report("Unable to write cache file '$cacheFile'");
-		}
-
-		// Generate log file
-		$logFile = $this->stylesheet->file('log');
-		$logContent = $task->toJSON();
-
-		if (!JFile::write($logFile, $logContent)) {
-			$task->report("Unable to write log file '$logFile'.");
 		}
 
 		return $task->resolve();
