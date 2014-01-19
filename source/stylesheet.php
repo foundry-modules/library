@@ -25,6 +25,8 @@ class %BOOTCODE%_Stylesheet {
 
 	public $location;
 
+	public $name;
+
 	static $attached = array();
 
 	static $filetypes = array(
@@ -43,9 +45,10 @@ class %BOOTCODE%_Stylesheet {
 
 	public function __construct($ns='', $workspace=array(), $location) {
 
-		$this->ns = $ns;
+		$this->ns        = $ns;
 		$this->workspace = array_merge($this->workspace, $workspace);
-		$this->location = $location;
+		$this->location  = $location;
+		$this->name      = $this->workspace[$this->location];
 	}
 
 	public function folder($name='current') {
