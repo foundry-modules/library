@@ -12,7 +12,6 @@ class %BOOTCODE%_Stylesheet_Task {
 	const STATE_PENDING = 'pending';
 
 	// Task summary
-	public $name;
 	public $state;
 	public $message = '';
 	public $details = array();
@@ -31,61 +30,64 @@ class %BOOTCODE%_Stylesheet_Task {
 	// Task reporting
 	public $output = null;
 
-	public function __construct($name='Task', $autostart=true) {
+	public function __construct($message='', $type=self::MESSAGE_INFO) {
 
-		$this->name  = $name;
 		$this->state = self::STATE_PENDING;
 
-		if ($autostart) $this->start();
+		if (!empty($message)) {
+			$this->message = $this->strip_root($message);
+			$this->report($message, $type);
+		}
+
+		$this->start();
 	}
 
-	private function start($message='', $type=self::MESSAGE_INFO) {
-
-		if (empty($message)) $message = "$this->name started.";
+	public function start() {
 
 		$this->time_start = microtime(true);
 		$this->mem_start  = memory_get_usage();
-		$this->report($message, $type);
 
 		return $this;
 	}
 
-	private function stop($message='', $type=self::MESSAGE_INFO) {
-
-		if (empty($message)) $message = "$this->name stopped.";
+	public function stop() {
 
 		$this->time_end   = microtime(true);
 		$this->time_total = $this->time_end - $this->time_start;
 		$this->mem_end    = memory_get_usage();
 		$this->mem_peak   = memory_get_peak_usage();
-		$this->report($message, $type);
-
-		// Write to log file
-		$this->save();
 
 		return $this;
 	}
 
 	public function resolve($message='', $type=self::MESSAGE_SUCCESS) {
 
-		if (empty($message)) $message = "$this->name completed.";
-
-		$this->message = $message;
 		$this->state   = self::STATE_SUCCESS;
 		$this->failed  = false;
-		$this->stop($message, $type);
+
+		if (!empty($message)) {
+			$this->message = $this->strip_root($message);
+			$this->report($message, $type);
+		}
+
+		$this->stop();
+		$this->save();
 
 		return $this;
 	}
 
 	public function reject($message='', $type=self::MESSAGE_ERROR) {
 
-		if (empty($message)) $message = "$this->name failed.";
-
-		$this->message = $message;
 		$this->state   = self::STATE_ERROR;
 		$this->failed  = true;
-		$this->stop($message, $type);
+
+		if (!empty($message)) {
+			$this->message = $this->strip_root($message);
+			$this->report($message, $type);
+		}
+
+		$this->stop();
+		$this->save();
 
 		return $this;
 	}
@@ -95,25 +97,42 @@ class %BOOTCODE%_Stylesheet_Task {
 		// Strip site root path
 		$message = str_ireplace(%BOOTCODE%_FOUNDRY_JOOMLA_PATH . DIRECTORY_SEPARATOR, '', $message);
 
+		$timestamp = microtime(true);
+		$key       = $timestamp * 1000;
+
 		$detail = (object) array(
-			'timestamp' => time(),
+			'timestamp' => $timestamp,
 			'message'   => $message,
 			'type'      => $type
 		);
 
-		$this->details[] = $detail;
+		$this->details[$key] = $detail;
 
 		return $detail;
+	}
+
+	private function strip_root($path) {
+
+		$root = %BOOTCODE%_FOUNDRY_JOOMLA_PATH . '/';
+		$root_win = str_replace('\\', '/', $root);
+
+		if (strpos($path, $root)===0) {
+			$path = substr_replace($path, '', 0, strlen($root));
+		} else if (strpos($path, $root_win)===0) {
+			$path = substr_replace($path, '', 0, strlen($root_win));
+		}
+
+		return $path;
 	}
 
 	public function toArray() {
 
 		$task = array();
+		$details = array();
 
 		$props = array(
 			'state',
 			'message',
-			'details',
 			'failed',
 			'time_start',
 			'time_end',
@@ -124,20 +143,24 @@ class %BOOTCODE%_Stylesheet_Task {
 		);
 
 		foreach($props as $prop) {
-
 			$task[$prop] = $this->$prop;
+		}
 
-			// Strip site root path
-			if ($prop=='message') {
-				$task[$prop] = str_ireplace(%BOOTCODE%_FOUNDRY_JOOMLA_PATH . DIRECTORY_SEPARATOR, '', $this->$prop);
+		foreach ($this->details as $timestamp => $detail) {
+			$details[$timestamp] = $detail;
+		}
+
+		foreach($this->subtasks as $subtask) {
+			$task['subtasks'][] = $subtask;
+			foreach ($subtask->details as $timestamp => $detail) {
+				$details[$timestamp] = $detail;
 			}
 		}
 
-		$task['subtasks'] = array();
+		// Sort log by timestamp
+		ksort($details);
 
-		foreach($this->subtasks as $subtask) {
-			$task['subtasks'][] = $subtask->toArray();
-		}
+		$task['details'] = $details;
 
 		return $task;
 	}
