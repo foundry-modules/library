@@ -80,7 +80,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 	public function run($section, $options=array()) {
 
 		// Create new task
-		$this->task = new %BOOTCODE%_Stylesheet_Task("Compile section '$section'");
+		$this->task = new %BOOTCODE%_Stylesheet_Task("Compiling section '$section'.");
 
 		$task = $this->task;
 
@@ -101,17 +101,17 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		// Check if less file exists.
 		if (!JFile::exists($in)) {
-			return $task->reject('Missing less file "' . $in . '".');
+			return $task->reject("Missing less file '$in'.");
 		}
 
 		// Check if folder is writable.
 		if (!is_writable($root)) {
-			return $task->reject('Unable to write files inside the folder "' . $root . '".');
+			return $task->reject("Unable to write files inside the folder '$root'.");
 		}
 
 		// Check if css file is writable.
 		if (JFile::exists($out) && !is_writable($out)) {
-			return $task->reject('Unable to write css file "' . $out . '".');
+			return $task->reject("Unable to write css file '$out'.");
 		}
 
 		// Prepare cache.
@@ -119,7 +119,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		// Check if cache file is writable.
 		if (JFile::exists($cache) && !is_writable($cache)) {
-			return $task->reject('Unable to write cache file "' . $out . '".');
+			return $task->reject("Unable to write cache file '$cache'.");
 		}
 
 		// If there is an existing cache file,
@@ -129,7 +129,7 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 			$content = JFile::read($cache);
 
 			if ($content===false) {
-				$task->report('Unable to read existing cache file "' . $cache . '".', 'info');
+				$task->report("Unable to read existing cache file '$cache'.", 'info');
 			} else {
 				$cacheBefore = json_decode($content, true);
 			}
@@ -189,10 +189,17 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 				return $task->reject("An error occured while writing cache file '$cache'.");
 			}
 
+			// Delete minified file.
+			$minified = $this->stylesheet->file($section, 'minified');
+			if (JFile::exists($minified) && !JFile::delete($minified)) {
+				$task->report("Unable to remove minified file '$minified'.", 'warn');
+			}
+
 		// If there are no changes, skip writing stylesheet & cache file.
 		} else {
 
-			$task->report("There are no changes in this stylesheet.", 'info');
+			$task->report("There are no changes in this section.", 'info');
+			return $task->stop();
 		}
 
 		return $task->resolve();

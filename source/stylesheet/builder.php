@@ -81,8 +81,11 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function run($preset='cache', $options=array()) {
 
+		$location = $this->stylesheet->location;
+		$name     = $this->stylesheet->name;
+
 		// Create compile task object.
-		$this->task = new %BOOTCODE%_Stylesheet_Task("Build stylesheet");
+		$this->task = new %BOOTCODE%_Stylesheet_Task("Building $location stylesheet '$name' using '$preset' preset.");
 		$task = $this->task;
 
 		// Write to a log file when this task is completed.
@@ -159,7 +162,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 			// Skip unreadable file
 			if ($modifiedTime===false) {
-				$task->report("Unable to get modified time for '$file'");
+				$task->report("Unable to get modified time for '$file'.");
 				continue;
 			}
 
@@ -174,7 +177,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$cacheContent = json_encode($cache);
 
 		if (!JFile::write($cacheFile, $cacheContent)) {
-			$task->report("Unable to write cache file '$cacheFile'");
+			$task->report("Unable to write cache file '$cacheFile'.");
 		}
 
 		return $task->resolve();
@@ -182,7 +185,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function compileGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Stylesheet_Task("Compile all sections for group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Compiling all sections for group '$group'.");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -217,7 +220,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function minifyGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Stylesheet_Task("Minify all sections for group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Minifying all sections for group '$group'.");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -252,7 +255,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function buildGroup($group, $options=array()) {
 
-		$task = new %BOOTCODE%_Stylesheet_Task("Building group '$group'");
+		$task = new %BOOTCODE%_Stylesheet_Task("Building group '$group'.");
 
 		// Get manifest
 		$manifest = $this->stylesheet->manifest();
@@ -373,7 +376,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function generateIndex($sections=array(), $type='css') {
 
-		$task = new %BOOTCODE%_Stylesheet_Task("Generate index for $type sections");
+		$task = new %BOOTCODE%_Stylesheet_Task("Generating index for $type sections.");
 
 		$index = '';
 		foreach ($sections as $section) {
@@ -388,7 +391,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 	public function joinFiles($sections=array(), $type='css') {
 
-		$task = new %BOOTCODE%_Stylesheet_Task("Join $type sections");
+		$task = new %BOOTCODE%_Stylesheet_Task("Joining $type sections.");
 
 		$content = '';
 

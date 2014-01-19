@@ -15,7 +15,7 @@ class %BOOTCODE%_Stylesheet_Minifier extends %BOOTCODE%_CSSMin {
 	public function run($section, $options=array()) {
 
 		// Create new task
-		$this->task = new %BOOTCODE%_Stylesheet_Task("Minify section '$section'");
+		$this->task = new %BOOTCODE%_Stylesheet_Task("Minifying section '$section'.");
 		$task = $this->task;
 
 		// Get paths
