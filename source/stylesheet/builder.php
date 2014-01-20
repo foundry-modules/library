@@ -148,6 +148,9 @@ class %BOOTCODE%_Stylesheet_Builder {
 			}
 		}
 
+		// If any of the task above failed, stop.
+		if ($task->failed) return $task;
+
 		// Generate cache file
 		$sections = $this->stylesheet->sections();
 		$files = array();
