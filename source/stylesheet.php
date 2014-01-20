@@ -510,8 +510,7 @@ class %BOOTCODE%_Stylesheet {
 		// Strip extension
 		$path = preg_replace("/\\.[^.\\s]{3,4}$/", "", $path);
 
-		// Strip trailing slash
-		return substr($path, 1);
+		return substr($path);
 	}
 
 	public function imports($section) {
