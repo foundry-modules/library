@@ -323,7 +323,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function compiler() {
 
-		static $compiler;
+		// static $compiler;
 
 		if (!isset($compiler)) {
 			$compiler = new %BOOTCODE%_Stylesheet_Compiler($this);
@@ -334,7 +334,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function minifier() {
 
-		static $minifier;
+		// static $minifier;
 
 		if (!isset($minifier)) {
 			$minifier = new %BOOTCODE%_Stylesheet_Minifier($this);
@@ -346,7 +346,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function builder() {
 
-		static $builder;
+		// static $builder;
 
 		if (!isset($builder)) {
 			$builder = new %BOOTCODE%_Stylesheet_Builder($this);
@@ -379,7 +379,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function type() {
 
-		static $type;
+		// static $type;
 
 		if (isset($type)) return $type;
 
@@ -410,7 +410,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function manifest() {
 
-		static $manifestContent;
+		// static $manifestContent;
 
 		// Manifest content loaded before, just return it.
 		if (isset($manifestContent)) return $manifestContent;
@@ -439,7 +439,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function sections() {
 
-		static $sections;
+		// static $sections;
 
 		if (isset($sections)) return $sections;
 
@@ -479,7 +479,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function strip_folder($path, $folders=array()) {
 
-		static $folders;
+		// static $folders;
 
 		// Generate a list of folders to strip
 		if (!isset($folders)) {
@@ -516,7 +516,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function imports($section) {
 
-		static $imports;
+		// static $imports;
 		if (!isset($imports)) $imports = array();
 		if (isset($imports[$section])) return $imports[$section];
 
@@ -581,13 +581,13 @@ class %BOOTCODE%_Stylesheet {
 
 	public function overrides() {
 
-		static $overrides;
+		// static $overrides;
 
 		if (isset($overrides)) return $overrides;
 
 		// Prepare keywords for path building.
 		$NS = $this->ns . '_';
-		$administrator = ($this->location=='admin') ? 'administrator/' : '';
+		$administrator = ($this->location=='admin') ? '/administrator/' : '';
 		$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
 
 		// Determine path for Joomla template folder because frontend and backend is different.
@@ -613,7 +613,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function hasOverride() {
 
-		static $hasOverride;
+		// static $hasOverride;
 
 		if (!isset($override)) {
 			$overrideFile = $this->file(array('location' => 'override', 'type' => 'css'));
@@ -625,7 +625,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function modules() {
 
-		static $modules;
+		// static $modules;
 
 		if (isset($modules)) return $modules;
 
@@ -696,7 +696,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function status($section='style') {
 
-		static $status;
+		// static $status;
 		if (!isset($status)) $status = array();
 		if (isset($status[$section])) return $status[$section];
 
@@ -765,7 +765,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public function changes($fast=false) {
 
-		static $result;
+		// static $result;
 
 		$key = (string) $fast;
 
