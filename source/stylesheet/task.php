@@ -151,8 +151,11 @@ class %BOOTCODE%_Stylesheet_Task {
 		}
 
 		foreach($this->subtasks as $subtask) {
+
+			$subtask = $subtask->toArray();
 			$task['subtasks'][] = $subtask;
-			foreach ($subtask->details as $timestamp => $detail) {
+
+			foreach ($subtask['details'] as $timestamp => $detail) {
 				$details[$timestamp] = $detail;
 			}
 		}
