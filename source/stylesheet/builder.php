@@ -79,6 +79,21 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$this->stylesheet = $stylesheet;
 	}
 
+	private static function array_merge_recursive_distinct(array &$array1, array &$array2) {
+
+		$merged = $array1;
+
+		foreach($array2 as $key => &$value) {
+			if(is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+				$merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value);
+			} else {
+				$merged[$key] = $value;
+			}
+		}
+
+		return $merged;
+	}
+
 	public function run($preset='cache', $options=array()) {
 
 		$location = $this->stylesheet->location;
@@ -92,7 +107,8 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$task->output = $this->stylesheet->file('log');
 
 		// Normalize options
-		$options = array_merge_recursive(self::$defaultOptions, self::$presets[$preset], $options);
+		$options = self::array_merge_recursive_distinct(self::$presets[$preset], $options);
+		$options = self::array_merge_recursive_distinct(self::$defaultOptions, $options);
 
 		// Get manifest file.
 		$manifest = $this->stylesheet->manifest();
