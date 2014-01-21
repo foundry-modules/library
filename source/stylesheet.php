@@ -430,7 +430,7 @@ class %BOOTCODE%_Stylesheet {
 		// If no manifest file found or manifest could not be parsed, assume simple stylesheet.
 		// Simple stylesheet does not contain sections, the bare minimum is a single "style.css" file.
 		// If it has a "style.less" file, then this less file is considered the source stylesheet where "style.css" is compiled from, else "style.css" is considered the source stylesheet.
-		if (!is_array($manifestContent)) {
+		if (empty($manifestContent) || !is_array($manifestContent)) {
 			$manifestContent = array('style' => array('style'));
 		}
 

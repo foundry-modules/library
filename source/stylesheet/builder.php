@@ -98,6 +98,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 		$location = $this->stylesheet->location;
 		$name     = $this->stylesheet->name;
+		$type     = $this->stylesheet->type();
 
 		// Create compile task object.
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Building $location stylesheet '$name' using '$preset' preset.");
@@ -115,19 +116,32 @@ class %BOOTCODE%_Stylesheet_Builder {
 
 		foreach ($manifest as $group => $sections) {
 
-			// If we need to compile,
-			$compileOptions = $options['compile'];
+			// Compile stylesheet if this is ATS or LESS
+			if ($type!=='css') {
 
-			if ($compileOptions['enabled']) {
+				// If we need to compile,
+				$compileOptions = $options['compile'];
 
-				// then compile all sections for this group.
-				$subtask = $this->compileGroup($group);
-				$task->subtasks[] = $subtask;
+				if ($compileOptions['enabled']) {
 
-				// If failed, stop.
-				if ($subtask->failed) {
-					$task->reject();
-					break;
+					// then compile all sections for this group.
+					$subtask = $this->compileGroup($group);
+					$task->subtasks[] = $subtask;
+
+					// If failed, stop.
+					if ($subtask->failed) {
+						$task->reject();
+						break;
+					}
+				}
+
+			// Else verify if the CSS file exists
+			} else {
+
+				$cssFile = $this->stylesheet->file('css');
+
+				if (!JFile::exists($cssFile)) {
+					return $task->reject("Missing css file '$cssFile'.");
 				}
 			}
 
@@ -147,19 +161,22 @@ class %BOOTCODE%_Stylesheet_Builder {
 				}
 			}
 
-			// If we need to build,
-			$buildOptions = $options['build'];
+			if ($type=='ats') {
 
-			if ($buildOptions['enabled']) {
+				// If we need to build,
+				$buildOptions = $options['build'];
 
-				// then build this group.
-				$subtask = $this->buildGroup($group, $buildOptions);
-				$task->subtasks[] = $subtask;
+				if ($buildOptions['enabled']) {
 
-				// If failed, stop.
-				if ($subtask->failed) {
-					$task->reject();
-					break;
+					// then build this group.
+					$subtask = $this->buildGroup($group, $buildOptions);
+					$task->subtasks[] = $subtask;
+
+					// If failed, stop.
+					if ($subtask->failed) {
+						$task->reject();
+						break;
+					}
 				}
 			}
 		}
@@ -167,36 +184,38 @@ class %BOOTCODE%_Stylesheet_Builder {
 		// If any of the task above failed, stop.
 		if ($task->failed) return $task;
 
-		// Generate cache file
-		$sections = $this->stylesheet->sections();
-		$files = array();
-		$cache = array();
+		if ($type=='ats') {
+			// Generate cache file
+			$sections = $this->stylesheet->sections();
+			$files = array();
+			$cache = array();
 
-		// Collect modified time for every section's css file
-		foreach($sections as $section) {
+			// Collect modified time for every section's css file
+			foreach($sections as $section) {
 
-			$file = $this->stylesheet->file($section, 'css');
-			$filename = basename($file);
-			$modifiedTime = @filemtime($file);
+				$file = $this->stylesheet->file($section, 'css');
+				$filename = basename($file);
+				$modifiedTime = @filemtime($file);
 
-			// Skip unreadable file
-			if ($modifiedTime===false) {
-				$task->report("Unable to get modified time for '$file'.");
-				continue;
+				// Skip unreadable file
+				if ($modifiedTime===false) {
+					$task->report("Unable to get modified time for '$file'.");
+					continue;
+				}
+
+				$files[$filename] = $modifiedTime;
 			}
 
-			$files[$filename] = $modifiedTime;
-		}
+			// Build cache data
+			$cache['files'] = $files;
 
-		// Build cache data
-		$cache['files'] = $files;
+			// Generate cache file
+			$cacheFile = $this->stylesheet->file('cache');
+			$cacheContent = json_encode($cache);
 
-		// Generate cache file
-		$cacheFile = $this->stylesheet->file('cache');
-		$cacheContent = json_encode($cache);
-
-		if (!JFile::write($cacheFile, $cacheContent)) {
-			$task->report("Unable to write cache file '$cacheFile'.");
+			if (!JFile::write($cacheFile, $cacheContent)) {
+				$task->report("Unable to write cache file '$cacheFile'.");
+			}
 		}
 
 		return $task->resolve();
@@ -292,42 +311,28 @@ class %BOOTCODE%_Stylesheet_Builder {
 			return $task->reject("No available sections to minify.");
 		}
 
-		// If this is a simple stylesheet, just minify stylesheet.
-		if ($group=='style' && $sections[0]=='style') {
+		// Write target.
+		$type = 'css';
+		$mode = $options['target']['mode'];
 
-			$subtask = $this->stylesheet->minify('style');
-			$task->subtasks[] = $subtask;
+		$subtask = $this->writeTarget($group, $type, $mode);
+		$task->subtasks[] = $subtask;
 
-			// Stop if minifying stylesheet fail.
-			if ($subtask->failed) {
-				return $task->reject();
-			}
+		// Stop if writing target failed.
+		if ($subtask->failed) {
+			return $task->reject();
+		}
 
-		} else {
+		// Write minified target.
+		$type = 'minified';
+		$mode = $options['minified_target']['mode'];
 
-			// Write target.
-			$type = 'css';
-			$mode = $options['target']['mode'];
+		$subtask = $this->writeTarget($group, $type, $mode);
+		$task->subtasks[] = $subtask;
 
-			$subtask = $this->writeTarget($group, $type, $mode);
-			$task->subtasks[] = $subtask;
-
-			// Stop if writing target failed.
-			if ($subtask->failed) {
-				return $task->reject();
-			}
-
-			// Write minified target.
-			$type = 'minified';
-			$mode = $options['minified_target']['mode'];
-
-			$subtask = $this->writeTarget($group, $type, $mode);
-			$task->subtasks[] = $subtask;
-
-			// Stop if writing minified target failed.
-			if ($subtask->failed) {
-				return $task->reject();
-			}
+		// Stop if writing minified target failed.
+		if ($subtask->failed) {
+			return $task->reject();
 		}
 
 		return $task->resolve();
