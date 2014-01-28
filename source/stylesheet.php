@@ -190,48 +190,62 @@ class %BOOTCODE%_Stylesheet {
 		}
 
 		// Construct filename without extension
-		$file = $this->folder($location) . '/' . $filename;
+		$folder = $this->folder($location);
 
 		switch ($type) {
 
 			case 'worksheet':
 			case 'less':
-				$file .= '.less';
+				$file = "$folder/$filename.less";
 				break;
 
 			case 'stylesheet':
 			case 'css':
-				$file .= '.css';
+				$file = "$folder/$filename.css";
 				break;
 
 			case 'minified':
-				$file .= '.min.css';
+				$file = "$folder/$filename.min.css";
 				break;
 
 			case 'manifest':
 			case 'json':
-				$file .= '.json';
+				$file = "$folder/$filename.json";
 				break;
 
 			case 'fallback':
-				$file .= '.default.css';
+				$file = "$folder/$filename.default.css";
 				break;
 
 			case 'config':
 			case 'xml':
-				$file .= '.xml';
+				$file = "$folder/$filename.default.xml";
 				break;
 
 			case 'log';
-				$file .= '.log';
+				$folder = "$folder/_log";
+
+				// TODO: This shouldn't be here.
+				if (!JFolder::exists($folder)) {
+					JFolder::create($folder);
+				}
+
+				$file = "$folder/$filename.json";
 				break;
 
 			case 'cache':
-				$file .= '.cache';
+				$folder = "$folder/_cache";
+
+				// TODO: This shouldn't be here.
+				if (!JFolder::exists($folder)) {
+					JFolder::create($folder);
+				}
+
+				$file = "$folder/$filename.json";
 				break;
 
 			case 'variables':
-				$file .= '/variables.less';
+				$file = "$folder/variables.less";
 				break;
 		}
 
