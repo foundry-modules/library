@@ -125,7 +125,7 @@ class %BOOTCODE%_Stylesheet_Builder {
 				if ($compileOptions['enabled']) {
 
 					// then compile all sections for this group.
-					$subtask = $this->compileGroup($group);
+					$subtask = $this->compileGroup($group, $compileOptions);
 					$task->subtasks[] = $subtask;
 
 					// If failed, stop.
