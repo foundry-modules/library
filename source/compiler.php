@@ -280,7 +280,8 @@ class %BOOTCODE%_FoundryCompiler
 
 	public function minifyCSS($contents)
 	{
-		return %BOOTCODE%_CssMin::minify($contents);
+		$CSSmin = new %BOOTCODE%_CSSmin();
+		return $CSSmin->compress($contents);
 	}
 }
 
