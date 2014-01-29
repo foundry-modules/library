@@ -117,7 +117,7 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'log':
-				$folder = $this->folder('current') . "/_default";
+				$folder = $this->folder('current') . "/_log";
 				break;
 
 			case 'current':
@@ -913,18 +913,27 @@ class %BOOTCODE%_Stylesheet {
 	public function purge() {
 
 		// Create compile task object.
-		$task = new %BOOTCODE%_Stylesheet_Task("Purge stylesheet cache & log files");
+		$task = new %BOOTCODE%_Stylesheet_Task("Purging stylesheet cache & log files.");
 
-		// Get a list of all cache & log files in this folder.
-		$files = JFolder::files($this->folder(), '(.cache|.log)$', true, true);
+		$cacheFolder = $this->folder('cache');
 
-		// Go through each of the manifest files.
-		foreach ($files as $file) {
+		if (JFolder::exists($cacheFolder)) {
 
-			if (JFile::delete($file)) {
-				$task->report("Deleted file '$file'.");
+			if (JFolder::delete($cacheFolder)) {
+				$task->report("Deleted cache folder '$cacheFolder'.");
 			} else {
-				$task->report("Unable to delete '$file'.");
+				$task->report("Unable to delete cache folder '$cacheFolder'.");
+			}
+		}
+
+		$logFolder = $this->folder('log');
+
+		if (JFolder::exists($logFolder)) {
+
+			if (JFolder::delete($logFolder)) {
+				$task->report("Deleted log folder '$logFolder'.");
+			} else {
+				$task->report("Unable to delete log folder '$logFolder'.");
 			}
 		}
 
