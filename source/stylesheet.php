@@ -113,7 +113,11 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'cache':
-				$folder = $this->folder('current') . '/cache';
+				$folder = $this->folder('current') . '/_cache';
+				break;
+
+			case 'log':
+				$folder = $this->folder('current') . "/_default";
 				break;
 
 			case 'current':
@@ -223,24 +227,12 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'log';
-				$folder = "$folder/_log";
-
-				// TODO: This shouldn't be here.
-				if (!JFolder::exists($folder)) {
-					JFolder::create($folder);
-				}
-
+				$folder = $this->folder('cache');
 				$file = "$folder/$filename.json";
 				break;
 
 			case 'cache':
-				$folder = "$folder/_cache";
-
-				// TODO: This shouldn't be here.
-				if (!JFolder::exists($folder)) {
-					JFolder::create($folder);
-				}
-
+				$folder = $this->folder('log');
 				$file = "$folder/$filename.json";
 				break;
 

@@ -104,6 +104,12 @@ class %BOOTCODE%_Stylesheet_Builder {
 		$this->task = new %BOOTCODE%_Stylesheet_Task("Building $location stylesheet '$name' using '$preset' preset.");
 		$task = $this->task;
 
+		// Create log folder
+		$logFolder = $this->stylesheet->folder('log');
+		if (!JFolder::exists($logFolder)) {
+			JFolder::create($logFolder);
+		}
+
 		// Write to a log file when this task is completed.
 		$task->output = $this->stylesheet->file('log');
 
@@ -206,13 +212,20 @@ class %BOOTCODE%_Stylesheet_Builder {
 				$files[$filename] = $modifiedTime;
 			}
 
-			// Build cache data
+			// Build cache data.
 			$cache['files'] = $files;
 
 			// Generate cache file
-			$cacheFile = $this->stylesheet->file('cache');
+			$cacheFolder = $this->stylesheet->folder('cache');
+			$cacheFile   = $this->stylesheet->file('cache');
 			$cacheContent = json_encode($cache);
 
+			// Create cache folder if it doesn't exist.
+			if (!JFolder::exists($cacheFolder)) {
+				JFolder::create($cacheFolder);
+			}
+
+			// Write cache file.
 			if (!JFile::write($cacheFile, $cacheContent)) {
 				$task->report("Unable to write cache file '$cacheFile'.");
 			}

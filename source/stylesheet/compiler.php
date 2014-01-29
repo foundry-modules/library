@@ -84,6 +84,12 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		$task = $this->task;
 
+		// Create log folder
+		$logFolder = $this->stylesheet->folder('log');
+		if (!JFolder::exists($logFolder)) {
+			JFolder::create($logFolder);
+		}
+
 		// Write to a log file when this task is completed.
 		$task->output = $this->stylesheet->file($section, 'log');
 
@@ -181,6 +187,12 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 			$content = $cacheAfter['compiled'];
 			if (!JFile::write($out, $content)) {
 				return $task->reject("An error occured while writing css file '$out'.");
+			}
+
+			// Create cache folder
+			$cacheFolder = $this->stylesheet->folder('cache');
+			if (!JFolder::exists($cacheFolder)) {
+				JFolder::create($cacheFolder);
 			}
 
 			// Write cache file.
