@@ -49,8 +49,12 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 			'global'
 		),
 
+		// TODO: Revamp override system. This only support site overrides.
 		'override' => array(
+			'user',
 			'override',
+			'site',
+			'site_base',
 			'component',
 			'global'
 		),
