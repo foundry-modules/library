@@ -227,12 +227,12 @@ class %BOOTCODE%_Stylesheet {
 				break;
 
 			case 'log';
-				$folder = $this->folder('cache');
+				$folder = $this->folder('log');
 				$file = "$folder/$filename.json";
 				break;
 
 			case 'cache':
-				$folder = $this->folder('log');
+				$folder = $this->folder('cache');
 				$file = "$folder/$filename.json";
 				break;
 
