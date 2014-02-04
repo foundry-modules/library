@@ -88,6 +88,9 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	{
 		$document = JFactory::getDocument();
 
+		// Do not attach if document type is not html.
+		if ($document->getType() != 'html') return;
+
 		// Load configuration script first
 		$script = $this->load();
 
