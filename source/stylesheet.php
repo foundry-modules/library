@@ -10,7 +10,7 @@ jimport('joomla.filesystem.path');
 
 class %BOOTCODE%_Stylesheet {
 
-	private $ns = null;
+	public $ns = null;
 
 	private $_override;
 
@@ -488,7 +488,7 @@ class %BOOTCODE%_Stylesheet {
 		// static $folders;
 
 		// Generate a list of folders to strip
-		if (!isset($folders)) {
+		if (empty($folders)) {
 
 			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location);
 			$folders = array();
@@ -504,7 +504,7 @@ class %BOOTCODE%_Stylesheet {
 		$found = false;
 		foreach($folders as $folder) {
 			if (strpos($path, $folder)===0) {
-				$path = substr_replace($path, '', 0, strlen($folder));
+				$path = substr_replace($path, '', 0, strlen($folder) + 1);
 				$found = true;
 				break;
 			}
@@ -662,7 +662,7 @@ class %BOOTCODE%_Stylesheet {
 		$app = JFactory::getApplication();
 
 		// If this stylesheet has overridem
-		if ($allowOverride && $this->hasOverride()) {
+		if ($this->location!=='override' && $allowOverride && $this->hasOverride()) {
 
 			// get override stylesheet instance,
 			$override = $this->override();
