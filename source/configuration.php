@@ -208,7 +208,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function __construct()
 	{
-		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance();
+		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance( $this->shortName );
 
 		$this->componentName = 'com_' . strtolower($this->fullName);
 		$this->path = %BOOTCODE%_FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
@@ -304,22 +304,23 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 	static $attached = false;
 
-	public function __construct()
+	public function __construct( $namespace = '' )
 	{
 		$this->environment = 'optimized';
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
-
+		$this->namespace 	= $namespace;
+		
 		parent::__construct();
 	}
 
-	public static function getInstance()
+	public static function getInstance( $namespace = '' )
 	{
 		static $instance = null;
 
 		if (is_null($instance)) {
-			$instance = new self();
+			$instance = new self( $namespace );
 		}
 
 		return $instance;
@@ -416,7 +417,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		{
 			$data[ 'path' ]		= rtrim( constant( $namespace ) , '/' ) . '/media/foundry/' . FD40_FOUNDRY_VERSION;
 		}
-		
+
 		return $data;
 	}
 
