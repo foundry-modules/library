@@ -253,6 +253,14 @@ class %BOOTCODE%_Stylesheet {
 		$NS = $this->ns . '_';
 		$root_uri = constant($NS . 'JOOMLA_URI');
 
+		// Process CDN urls if this is a site
+		$cdn 	= $NS . 'FOUNDRY_CDN';
+		
+		if( defined( $cdn ) && $this->location == 'site' )
+		{
+			$root_uri 	= constant( $cdn );
+		}
+
 		return $root_uri . '/' . $path;
 	}
 

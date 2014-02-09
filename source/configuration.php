@@ -409,6 +409,14 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			)
 		);
 
+		// Override with CDN settings
+		$namespace 	= strtoupper( $this->namespace ) . '_FOUNDRY_CDN';
+		
+		if( defined( $namespace ) )
+		{
+			$data[ 'path' ]		= rtrim( constant( $namespace ) , '/' ) . '/media/foundry/' . FD40_FOUNDRY_VERSION;
+		}
+		
 		return $data;
 	}
 
