@@ -28,6 +28,7 @@ class %BOOTCODE%_Stylesheet_Task {
 	public $mem_peak;
 
 	// Task reporting
+	static $key = 0;
 	public $output = null;
 
 	public function __construct($message='', $type=self::MESSAGE_INFO) {
@@ -98,7 +99,6 @@ class %BOOTCODE%_Stylesheet_Task {
 		$message = str_ireplace(%BOOTCODE%_FOUNDRY_JOOMLA_PATH . DIRECTORY_SEPARATOR, '', $message);
 
 		$timestamp = microtime(true);
-		$key       = $timestamp * 1000;
 
 		$detail = (object) array(
 			'timestamp' => $timestamp,
@@ -106,6 +106,7 @@ class %BOOTCODE%_Stylesheet_Task {
 			'type'      => $type
 		);
 
+		$key = self::$key++;
 		$this->details[$key] = $detail;
 
 		return $detail;
@@ -160,7 +161,7 @@ class %BOOTCODE%_Stylesheet_Task {
 			}
 		}
 
-		// Sort log by timestamp
+		// Sort log by key
 		ksort($details);
 
 		$task['details'] = $details;
