@@ -311,7 +311,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
 		$this->namespace 	= $namespace;
-		
+
 		parent::__construct();
 	}
 
@@ -421,10 +421,10 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 		// Override with CDN settings
 		$namespace 	= strtoupper( $this->namespace ) . '_FOUNDRY_CDN';
-		
+
 		if( defined( $namespace ) )
 		{
-			$data[ 'path' ]		= rtrim( constant( $namespace ) , '/' ) . '/media/foundry/' . FD40_FOUNDRY_VERSION;
+			$data[ 'path' ]		= rtrim( constant( $namespace ) , '/' ) . '/media/foundry/' . %BOOTCODE%_FOUNDRY_VERSION;
 		}
 
 		return $data;
