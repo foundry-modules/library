@@ -402,6 +402,13 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$app    = JFactory::getApplication();
 		$config = JFactory::getConfig();
 
+		$appendTitle	= '';
+
+		if( $config->get( 'sitename_pagetitles' ) )
+		{
+			$appendTitle	= $config->get( 'sitename_pagetitles' ) == 1 ? 'before' : 'after';
+		}
+
 		$data = array(
 			"environment"   => $this->environment,
 			"source"        => $this->source,
@@ -413,7 +420,9 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
 				"version"   => (string) JVERSION,
-				"debug"     => (bool) $config->get('debug')
+				"debug"     => (bool) $config->get('debug'),
+				"appendTitle"	=> $appendTitle,
+				"sitename"		=> $config->get( 'sitename' )
 			),
 			"locale"        => array(
 				"lang"      => JFactory::getLanguage()->getTag()
