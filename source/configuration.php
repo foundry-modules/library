@@ -29,11 +29,12 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $environment = 'static';
 	public $source      = 'local';
 	public $mode        = 'compressed';
-	public $extension  = '.min.js';
+	public $extension   = '.min.js';
 
-	public $scripts    = array();
-	public $async       = true;
-	public $defer       = true;
+	public $scripts = array();
+	public $async   = true;
+	public $defer   = true;
+	public $inline  = false;
 
 	public function __construct()
 	{
@@ -102,13 +103,26 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		// Do not attach if document type is not html.
 		if ($document->getType() != 'html') return;
 
-		// Load configuration script first
-		$script = $this->load();
+		if ($this->inline) {
+
+			// Load configuration script inline
+			// This is used together with JS compressor plugins that
+			// defers the loading of configuration scripts.
+			// Configuration scripts CANNOT be deferred because
+			// configuration scripts provide bootloaders and
+			// abstract component which inline scripts rely upon.
+			$this->loadInline();
+
+		} else {
+
+			// Load configuration script first
+			$this->load();
+		}
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
 		// they can load & execute without page blocking.
-		foreach ($this->scripts as $i=>$script) {
+		foreach ($this->scripts as $i => $script) {
 			$scriptPath = $this->uri . '/scripts/' . $script . $this->extension;
 			$scriptTag  = $this->createScriptTag($scriptPath);
 			$document->addCustomTag($scriptTag);
@@ -117,22 +131,30 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function load()
 	{
-		$document = JFactory::getDocument();
-
 		// This is cached so it doesn't always write to file.
 		$script = $this->write();
 
 		// If unable to write to file, e.g. file permissions issue.
-		// Just dump the entire script on the head.
+		// then load the configuration script inline.
 		if ($script->failed) {
-			$contents = $this->export();
-			$document->addCustomTag('<script>' . $contents . '</script>');
+
+			$this->loadInline();
 		} else {
+
 			// Add to the very top of document head.
+			$document = JFactory::getDocument();
 			$document->addScript($script->url);
 		}
 
 		return $script;
+	}
+
+	public function loadInline()
+	{
+		$document = JFactory::getDocument();
+
+		$contents = $this->export();
+		$document->addCustomTag('<script>' . $contents . '</script>');
 	}
 
 	public function write()
