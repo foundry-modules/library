@@ -455,6 +455,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
 			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
+				"location"  => ($isAdmin ? "admin" : "site"),
 				"version"   => (string) JVERSION,
 				"debug"     => (bool) $config->get('debug'),
 				"appendTitle"	=> $appendTitle,
