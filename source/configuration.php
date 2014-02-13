@@ -315,6 +315,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->update();
 
 		// Attach Foundry configuration & scripts
+		$this->foundry->inline = $this->inline;
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
