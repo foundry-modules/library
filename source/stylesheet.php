@@ -255,7 +255,7 @@ class %BOOTCODE%_Stylesheet {
 
 		// Process CDN urls if this is a site
 		$cdn 	= $NS . 'FOUNDRY_CDN';
-		
+
 		if( defined( $cdn ) && $this->location == 'site' )
 		{
 			$root_uri 	= constant( $cdn );
@@ -746,12 +746,19 @@ class %BOOTCODE%_Stylesheet {
 				$exists   = JFile::exists($file);
 				$size     = null;
 				$modified = null;
+				$rules    = 0;
 				$state    = 'unknown';
 
 				if ($exists) {
 					$size     = @filesize($file);
 					$modified = @filemtime($file);
-					$state   = 'ready';
+					$state    = 'ready';
+
+					if ($filetype=='css' || $filetype=='minified') {
+						$content  = JFile::read($file);
+						$rules = FD40_Stylesheet_Analyzer::rules($content);
+						$rules = count($rules);
+					}
 				} else {
 					$state   = 'missing';
 				}
@@ -766,7 +773,8 @@ class %BOOTCODE%_Stylesheet {
 					'exists'   => $exists,
 					'size'     => $size,
 					'modified' => $modified,
-					'state'    => $state
+					'state'    => $state,
+					'rules'    => $rules
 				);
 			}
 		}
