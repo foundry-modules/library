@@ -154,8 +154,13 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function write()
 	{
+		// Prefer CDN over site uri
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
+
 		$configPath = $this->path . '/config/';
-		$configUri  = $this->uri  . '/config/';
+		$configUri  = $uri        . '/config/';
 
 		$script = new stdClass();
 		$script->id     = $this->id();
