@@ -253,12 +253,24 @@ class %BOOTCODE%_Stylesheet {
 		$NS = $this->ns . '_';
 		$root_uri = constant($NS . 'JOOMLA_URI');
 
-		// Process CDN urls if this is a site
-		$cdn 	= $NS . 'FOUNDRY_CDN';
+		return $root_uri . '/' . $path;
+	}
 
-		if( defined( $cdn ) && $this->location == 'site' )
-		{
-			$root_uri 	= constant( $cdn );
+	public function cdn($filename, $type=null) {
+
+		$path = is_array($filename) ?
+					$this->path($filename) :
+					$this->path($filename, $type);
+
+		$NS = $this->ns . '_';
+
+		// Prefer Joomla CDN if available
+		if (defined($NS . 'JOOMLA_CDN')) {
+			$root_uri = constant($NS . 'JOOMLA_CDN');
+
+		// Fallback to Joomla URI if CDN is not available
+		} else {
+			$root_uri = constant($NS . 'JOOMLA_URI');
 		}
 
 		return $root_uri . '/' . $path;
@@ -689,7 +701,8 @@ class %BOOTCODE%_Stylesheet {
 		foreach ($manifest as $group => $sections) {
 
 			// Get stylesheet uri.
-			$uri = $this->uri($group, $type);
+			// For attaching purposes we will prefer CDN if available.
+			$uri = $this->cdn($group, $type);
 			$uris[] = $uri;
 
 			// Stop because this stylesheet
