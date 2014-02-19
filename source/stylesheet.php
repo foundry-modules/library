@@ -264,13 +264,16 @@ class %BOOTCODE%_Stylesheet {
 
 		$NS = $this->ns . '_';
 
-		// Prefer Joomla CDN if available
-		if (defined($NS . 'JOOMLA_CDN')) {
-			$root_uri = constant($NS . 'JOOMLA_CDN');
+		$passiveCdn = false;
+		if (defined($NS . 'PASSIVE_CDN')) {
+			$passiveCdn = constant($NS . 'PASSIVE_CDN');
+		}
 
-		// Fallback to Joomla URI if CDN is not available
-		} else {
+		// Don't rewrite url if we're on passive CDN.
+		if ($passiveCdn) {
 			$root_uri = constant($NS . 'JOOMLA_URI');
+		} else {
+			$root_uri = constant($NS . 'JOOMLA_CDN');
 		}
 
 		return $root_uri . '/' . $path;
@@ -680,6 +683,7 @@ class %BOOTCODE%_Stylesheet {
 
 		$document = JFactory::getDocument();
 		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
 
 		// If this stylesheet has overridem
 		if ($this->location!=='override' && $allowOverride && $this->hasOverride()) {
@@ -701,8 +705,15 @@ class %BOOTCODE%_Stylesheet {
 		foreach ($manifest as $group => $sections) {
 
 			// Get stylesheet uri.
-			// For attaching purposes we will prefer CDN if available.
-			$uri = $this->cdn($group, $type);
+			// Do not attach CDN uri for backend
+			if ($isAdmin) {
+				$uri = $this->uri($group, $type);
+
+			// Prefer CDN over site uri if possible
+			} else {
+				$uri = $this->cdn($group, $type);
+			}
+
 			$uris[] = $uri;
 
 			// Stop because this stylesheet
