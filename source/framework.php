@@ -15,7 +15,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'LONG_VERSION', '$FOUNDRY_LONG_VERSION');
 		define($NS.'PATH'        , constant($NS.'JOOMLA_PATH') . '/media/foundry/' . constant($NS.'VERSION'));
 		define($NS.'URI'         , rtrim(JURI::root(), '/') . '/media/foundry/' . constant($NS.'VERSION'));
-		define($NS.'CDN'         , 'http://foundry.stackideas.com/' .  constant($NS.'VERSION'));
+		define($NS.'HOSTED'      , 'http://foundry.stackideas.com/' .  constant($NS.'VERSION'));
 		define($NS.'CLASSES'     , constant($NS.'PATH') . '/joomla');
 		define($NS.'LIB'         , constant($NS.'PATH') . '/libraries');
 	}
@@ -68,6 +68,53 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'ADMIN_THEMES'	  , constant($NS.'ADMIN') . '/themes');
 		define($NS.'ADMIN_THEMES_URI' , constant($NS.'ADMIN_URI') . '/themes');
 		define($NS.'USER_THEMES'      , constant($NS.'MEDIA') . '/themes');
+		define($NS.'USER_THEMES_URI'  , constant($NS.'MEDIA_URI') . '/themes');
+	}
+
+	public static function defineFrameworkCDNConstants($ns='', $cdnRoot) {
+
+		static $executed;
+
+		if ($executed) return;
+
+		$NS = $ns . '_';
+
+		define($NS.'JOOMLA_CDN'  , rtrim($cdnRoot, '/'));
+		define($NS.'MEDIA_CDN'   , constant($NS.'JOOMLA_CDN') . '/media');
+		define($NS.'CDN'         , constant($NS.'JOOMLA_CDN') . '/media/foundry/' . constant($NS.'VERSION'));
+
+		$executed = true;
+	}
+
+	public static function defineComponentCDNConstants($ns='', $cdnRoot) {
+
+		$NS = $ns . '_';
+
+		// Also define framework constant
+		%BOOTCODE%_FoundryFramework::defineFrameworkCDNConstants('%BOOTCODE%_FOUNDRY', $cdnRoot);
+
+		// Joomla
+		define($NS.'JOOMLA_CDN'       , rtrim($cdnRoot, '/'));
+		define($NS.'JOOMLA_ADMIN_CDN' , constant($NS.'JOOMLA_CDN') . '/administrator');
+		define($NS.'JOOMLA_SITE_TEMPLATES_CDN'  , constant($NS.'JOOMLA_CDN') . '/templates' );
+		define($NS.'JOOMLA_ADMIN_TEMPLATES_CDN' , constant($NS.'JOOMLA_ADMIN_CDN') . '/templates' );
+		define($NS.'JOOMLA_MODULES_CDN'         , constant($NS.'JOOMLA_CDN') . '/modules' );
+
+		// Foundry
+		define($NS.'FOUNDRY_CDN' , constant($NS.'JOOMLA_CDN') . '/media/foundry/' . constant($NS.'FOUNDRY_VERSION'));
+
+		// Component
+		define($NS.'SITE_CDN'      , constant($NS.'JOOMLA_CDN') . '/components/' . constant($NS.'COMPONENT_NAME'));
+		define($NS.'ADMIN_CDN'     , constant($NS.'JOOMLA_ADMIN_CDN') . '/components/' . constant($NS.'COMPONENT_NAME'));
+		define($NS.'MEDIA_CDN'     , constant($NS.'JOOMLA_CDN') . '/media/' . constant($NS.'COMPONENT_NAME'));
+		define($NS.'SCRIPTS_CDN'   , constant($NS.'MEDIA_CDN') . '/scripts');
+		define($NS.'RESOURCES_CDN' , constant($NS.'MEDIA_CDN') . '/resources');
+		define($NS.'CONFIG_CDN'    , constant($NS.'MEDIA_CDN') . '/config');
+
+		// Themes
+		define($NS.'SITE_THEMES_CDN'  , constant($NS.'SITE_CDN') . '/themes');
+		define($NS.'ADMIN_THEMES_CDN' , constant($NS.'ADMIN_CDN') . '/themes');
+		define($NS.'USER_THEMES_CDN'  , constant($NS.'MEDIA_CDN') . '/themes');
 	}
 }
 
