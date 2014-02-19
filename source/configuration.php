@@ -13,6 +13,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $shortName;
 	public $path;
 	public $uri;
+	public $cdn;
 	public $file;
 
 	public $environment = 'static';
@@ -70,6 +71,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function toArray()
 	{
+		// Note: Extended class furnish this with proper data.
 		return array();
 	}
 
@@ -94,11 +96,14 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		// Load configuration script first
 		$script = $this->load();
 
+		// Prefer CDN over site uri
+		$uri = ($this->cdn ? $this->cdn : $this->uri);
+
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
 		// they can load & execute without page blocking.
 		foreach ($this->scripts as $i=>$script) {
-			$scriptPath = $this->uri . '/scripts/' . $script . $this->extension;
+			$scriptPath = $uri . '/scripts/' . $script . $this->extension;
 			$scriptTag  = $this->createScriptTag($scriptPath);
 			$document->addCustomTag($scriptTag);
 		}
@@ -200,6 +205,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public $foundry;
 
+	public $namespace;
 	public $componentName;
 	public $baseUrl;
 	public $version;
@@ -208,11 +214,15 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function __construct()
 	{
-		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance( $this->shortName );
+		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance();
 
-		$this->componentName = 'com_' . strtolower($this->fullName);
-		$this->path = %BOOTCODE%_FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
-		$this->uri  = %BOOTCODE%_FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
+		$NS = $this->namespace . '_';
+
+		$this->fullName      = constant($NS.'CLASS_NAME');
+		$this->componentName = constant($NS.'COMPONENT_NAME');
+		$this->path          = constant($NS.'MEDIA');
+		$this->uri           = constant($NS.'MEDIA_URI');
+		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : null);
 
 		$this->file = $this->path . '/config.php';
 
@@ -262,16 +272,21 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 	{
 		$this->update();
 
-		$data = array_merge_recursive(
-			array(
-				"environment"   => $this->environment,
-				"source"        => $this->source,
-				"mode"          => $this->mode,
-				"baseUrl"       => $this->baseUrl,
-				"version"       => $this->version
-			),
-			$this->options
+		$options = array(
+			"environment"   => $this->environment,
+			"source"        => $this->source,
+			"mode"          => $this->mode,
+			"baseUrl"       => $this->baseUrl,
+			"version"       => $this->version
 		);
+
+		// Use script & style path from CDN.
+		if (!empty($this->cdn)) {
+			$options["scriptPath"] = $this->cdn;
+			$options["stylePath"]  = $this->cdn;
+		}
+
+		$data = array_merge_recursive($options, $this->options);
 
 		return $data;
 	}
@@ -304,23 +319,23 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 	static $attached = false;
 
-	public function __construct( $namespace = '' )
+	public function __construct()
 	{
 		$this->environment = 'optimized';
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
-		$this->namespace 	= $namespace;
+		$this->cdn  = (defined(%BOOTCODE%_FOUNDRY_CDN) ? %BOOTCODE%_FOUNDRY_CDN : null);
 
 		parent::__construct();
 	}
 
-	public static function getInstance( $namespace = '' )
+	public static function getInstance()
 	{
 		static $instance = null;
 
 		if (is_null($instance)) {
-			$instance = new self( $namespace );
+			$instance = new self();
 		}
 
 		return $instance;
@@ -379,8 +394,8 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		switch ($this->source) {
 
 			case 'remote':
-				// Note: Foundry CDN is not working yet.
-				$this->uri = %BOOTCODE%_FOUNDRY_CDN;
+				// Note: Foundry hosted is not working yet.
+				$this->uri = %BOOTCODE%_FOUNDRY_HOSTED;
 				break;
 		}
 	}
@@ -404,7 +419,9 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			"source"        => $this->source,
 			"mode"          => $this->mode,
 			"path"          => $this->uri,
+			"cdn"           => $this->cdn,
 			"extension"     => $this->extension,
+			"cdnPath"       => (defined(%BOOTCODE%_FOUNDRY_JOOMLA_CDN) ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : null),
 			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
 			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
 			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
@@ -419,12 +436,9 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			)
 		);
 
-		// Override with CDN settings
-		$namespace 	= strtoupper( $this->namespace ) . '_FOUNDRY_CDN';
-
-		if( defined( $namespace ) )
-		{
-			$data[ 'path' ]		= rtrim( constant( $namespace ) , '/' ) . '/media/foundry/' . %BOOTCODE%_FOUNDRY_VERSION;
+		// Prefer CDN over site
+		if ($this->cdn) {
+			$data['path'] = $this->cdn;
 		}
 
 		return $data;
