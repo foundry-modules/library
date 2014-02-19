@@ -71,7 +71,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'USER_THEMES_URI'  , constant($NS.'MEDIA_URI') . '/themes');
 	}
 
-	public static function defineFrameworkCDNConstants($ns='', $cdnRoot) {
+	public static function defineFrameworkCDNConstants($ns='', $cdnRoot, $passiveCdn=false) {
 
 		static $executed;
 
@@ -82,16 +82,17 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'JOOMLA_CDN'  , rtrim($cdnRoot, '/'));
 		define($NS.'MEDIA_CDN'   , constant($NS.'JOOMLA_CDN') . '/media');
 		define($NS.'CDN'         , constant($NS.'JOOMLA_CDN') . '/media/foundry/' . constant($NS.'VERSION'));
+		define($NS.'PASSIVE_CDN' , $passiveCdn);
 
 		$executed = true;
 	}
 
-	public static function defineComponentCDNConstants($ns='', $cdnRoot) {
+	public static function defineComponentCDNConstants($ns='', $cdnRoot, $passiveCdn=false) {
 
 		$NS = $ns . '_';
 
 		// Also define framework constant
-		%BOOTCODE%_FoundryFramework::defineFrameworkCDNConstants('%BOOTCODE%_FOUNDRY', $cdnRoot);
+		%BOOTCODE%_FoundryFramework::defineFrameworkCDNConstants('%BOOTCODE%_FOUNDRY', $cdnRoot, $passiveCdn);
 
 		// Joomla
 		define($NS.'JOOMLA_CDN'       , rtrim($cdnRoot, '/'));
@@ -110,6 +111,7 @@ class %BOOTCODE%_FoundryFramework {
 		define($NS.'SCRIPTS_CDN'   , constant($NS.'MEDIA_CDN') . '/scripts');
 		define($NS.'RESOURCES_CDN' , constant($NS.'MEDIA_CDN') . '/resources');
 		define($NS.'CONFIG_CDN'    , constant($NS.'MEDIA_CDN') . '/config');
+		define($NS.'PASSIVE_CDN'   , $passiveCdn);
 
 		// Themes
 		define($NS.'SITE_THEMES_CDN'  , constant($NS.'SITE_CDN') . '/themes');
