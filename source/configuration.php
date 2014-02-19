@@ -88,7 +88,9 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function attach()
 	{
+		$app = JFactory::getApplication();
 		$document = JFactory::getDocument();
+		$isAdmin = $app->isAdmin();
 
 		// Do not attach if document type is not html.
 		if ($document->getType() != 'html') return;
@@ -97,7 +99,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		$script = $this->load();
 
 		// Prefer CDN over site uri
-		$uri = ($this->cdn ? $this->cdn : $this->uri);
+		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -270,6 +272,9 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function toArray()
 	{
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+
 		$this->update();
 
 		$options = array(
@@ -281,9 +286,9 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		);
 
 		// Use script & style path from CDN.
-		if (!empty($this->cdn)) {
-			$options["scriptPath"] = $this->cdn;
-			$options["stylePath"]  = $this->cdn;
+		if (!empty($this->cdn) && !$isAdmin) {
+			$options["scriptPath"] = $this->cdn . '/scripts';
+			$options["stylePath"]  = $this->cdn . '/styles';
 		}
 
 		$data = array_merge_recursive($options, $this->options);
@@ -325,7 +330,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
-		$this->cdn  = (defined(%BOOTCODE%_FOUNDRY_CDN) ? %BOOTCODE%_FOUNDRY_CDN : null);
+		$this->cdn  = (defined('%BOOTCODE%_FOUNDRY_CDN') ? %BOOTCODE%_FOUNDRY_CDN : null);
 
 		parent::__construct();
 	}
@@ -414,6 +419,8 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			$appendTitle	= $config->get( 'sitename_pagetitles' ) == 1 ? 'before' : 'after';
 		}
 
+		$isAdmin = $app->isAdmin();
+
 		$data = array(
 			"environment"   => $this->environment,
 			"source"        => $this->source,
@@ -421,10 +428,10 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			"path"          => $this->uri,
 			"cdn"           => $this->cdn,
 			"extension"     => $this->extension,
-			"cdnPath"       => (defined(%BOOTCODE%_FOUNDRY_JOOMLA_CDN) ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : null),
+			"cdnPath"       => (defined('%BOOTCODE%_FOUNDRY_JOOMLA_CDN') ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : null),
 			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
-			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
-			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
+			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
+			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
 				"version"   => (string) JVERSION,
 				"debug"     => (bool) $config->get('debug'),
@@ -437,7 +444,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		);
 
 		// Prefer CDN over site
-		if ($this->cdn) {
+		if ($this->cdn && !$isAdmin) {
 			$data['path'] = $this->cdn;
 		}
 
