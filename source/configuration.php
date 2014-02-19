@@ -24,6 +24,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $shortName;
 	public $path;
 	public $uri;
+	public $cdn;
 	public $file;
 
 	public $environment = 'static';
@@ -31,10 +32,10 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $mode        = 'compressed';
 	public $extension   = '.min.js';
 
-	public $scripts = array();
-	public $async   = true;
-	public $defer   = true;
-	public $inline  = false;
+	public $scripts    = array();
+	public $async      = true;
+	public $defer      = true;
+	public $inline     = false;
 
 	public function __construct()
 	{
@@ -82,6 +83,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function toArray()
 	{
+		// Note: Extended class furnish this with proper data.
 		return array();
 	}
 
@@ -118,6 +120,9 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 			// Load configuration script first
 			$this->load();
 		}
+
+		// Prefer CDN over site uri
+		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -233,6 +238,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public $foundry;
 
+	public $namespace;
 	public $componentName;
 	public $baseUrl;
 	public $version;
@@ -243,9 +249,13 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 	{
 		$this->foundry = %BOOTCODE%_FoundryConfiguration::getInstance();
 
-		$this->componentName = 'com_' . strtolower($this->fullName);
-		$this->path = %BOOTCODE%_FOUNDRY_MEDIA_PATH . '/' . $this->componentName;
-		$this->uri  = %BOOTCODE%_FOUNDRY_MEDIA_URI  . '/' . $this->componentName;
+		$NS = $this->namespace . '_';
+
+		$this->fullName      = constant($NS.'CLASS_NAME');
+		$this->componentName = constant($NS.'COMPONENT_NAME');
+		$this->path          = constant($NS.'MEDIA');
+		$this->uri           = constant($NS.'MEDIA_URI');
+		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : null);
 
 		$this->file = $this->path . '/config.php';
 
@@ -293,18 +303,26 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function toArray()
 	{
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+
 		$this->update();
 
-		$data = array_merge_recursive(
-			array(
-				"environment"   => $this->environment,
-				"source"        => $this->source,
-				"mode"          => $this->mode,
-				"baseUrl"       => $this->baseUrl,
-				"version"       => $this->version
-			),
-			$this->options
+		$options = array(
+			"environment"   => $this->environment,
+			"source"        => $this->source,
+			"mode"          => $this->mode,
+			"baseUrl"       => $this->baseUrl,
+			"version"       => $this->version
 		);
+
+		// Use script & style path from CDN.
+		if (!empty($this->cdn) && !$isAdmin) {
+			$options["scriptPath"] = $this->cdn . '/scripts';
+			$options["stylePath"]  = $this->cdn . '/styles';
+		}
+
+		$data = array_merge_recursive($options, $this->options);
 
 		return $data;
 	}
@@ -344,6 +362,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
+		$this->cdn  = (defined('%BOOTCODE%_FOUNDRY_CDN') ? %BOOTCODE%_FOUNDRY_CDN : null);
 
 		parent::__construct();
 	}
@@ -432,17 +451,21 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			$appendTitle	= $config->get( 'sitename_pagetitles' ) == 1 ? 'before' : 'after';
 		}
 
+		$isAdmin = $app->isAdmin();
+
 		$data = array(
 			"environment"   => $this->environment,
 			"source"        => $this->source,
 			"mode"          => $this->mode,
 			"path"          => $this->uri,
+			"cdn"           => $this->cdn,
 			"extension"     => $this->extension,
+			"cdnPath"       => (defined('%BOOTCODE%_FOUNDRY_JOOMLA_CDN') ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : null),
 			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
-			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator' : ''),
-			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . (($app->isAdmin()) ? '/administrator/index.php' : '/index.php'),
+			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
+			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
-				"location"  => ($app->isAdmin()) ? "admin" : "site",
+				"location"  => ($isAdmin ? "admin" : "site"),
 				"version"   => (string) JVERSION,
 				"debug"     => (bool) $config->get('debug'),
 				"appendTitle"	=> $appendTitle,
@@ -452,6 +475,11 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 				"lang"      => JFactory::getLanguage()->getTag()
 			)
 		);
+
+		// Prefer CDN over site
+		if ($this->cdn && !$isAdmin) {
+			$data['path'] = $this->cdn;
+		}
 
 		return $data;
 	}
