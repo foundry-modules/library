@@ -130,7 +130,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		// we want to fill in defer & async attribute so
 		// they can load & execute without page blocking.
 		foreach ($this->scripts as $i => $script) {
-			$scriptPath = $this->uri . '/scripts/' . $script . $this->extension;
+			$scriptPath = $uri . '/scripts/' . $script . $this->extension;
 			$scriptTag  = $this->createScriptTag($scriptPath);
 			$document->addCustomTag($scriptTag);
 		}
@@ -166,8 +166,13 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function write()
 	{
+		// Prefer CDN over site uri
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
+
 		$configPath = $this->path . '/config/';
-		$configUri  = $this->uri  . '/config/';
+		$configUri  = $uri        . '/config/';
 
 		$script = new stdClass();
 		$script->id     = $this->id();
