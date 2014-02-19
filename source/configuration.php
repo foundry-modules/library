@@ -40,7 +40,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		$isAdmin = $app->isAdmin();
 
 		// Disable CDN when running in backend
-		if ($isAdmin)
+		if ($isAdmin) {
 			$this->enableCdn = false;
 		}
 
