@@ -13,13 +13,16 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $shortName;
 	public $path;
 	public $uri;
-	public $cdn;
 	public $file;
 
 	public $environment = 'static';
 	public $source      = 'local';
 	public $mode        = 'compressed';
 	public $extension   = '.min.js';
+
+	public $cdn;
+	public $enableCdn  = false;
+	public $passiveCdn = false;
 
 	public $scripts    = array();
 	public $async      = true;
@@ -33,6 +36,14 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function update()
 	{
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+
+		// Disable CDN when running in backend
+		if ($isAdmin)
+			$this->enableCdn = false;
+		}
+
 		// Allow url overrides
 		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
 		$this->mode        = JRequest::getString($this->shortName . '_mode', $this->mode       , 'GET');
@@ -89,9 +100,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function attach()
 	{
-		$app = JFactory::getApplication();
 		$document = JFactory::getDocument();
-		$isAdmin = $app->isAdmin();
 
 		// Do not attach if document type is not html.
 		if ($document->getType() != 'html') return;
@@ -113,7 +122,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		// Prefer CDN over site uri
-		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
+		$uri = $this->enableCdn ? $this->cdn : $this->uri;
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -154,13 +163,13 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function write()
 	{
-		// Prefer CDN over site uri
-		$app = JFactory::getApplication();
-		$isAdmin = $app->isAdmin();
-		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
-
 		$configPath = $this->path . '/config/';
-		$configUri  = $uri        . '/config/';
+		$configUri  = $this->uri  . '/config/';
+
+		// Prefer CDN
+		if ($this->enableCdn) {
+			$configUri = $this->cdn . '/config/';
+		}
 
 		$script = new stdClass();
 		$script->id     = $this->id();
@@ -250,7 +259,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->componentName = constant($NS.'COMPONENT_NAME');
 		$this->path          = constant($NS.'MEDIA');
 		$this->uri           = constant($NS.'MEDIA_URI');
-		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : null);
+		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : '');
 
 		$this->file = $this->path . '/config.php';
 
@@ -298,21 +307,18 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function toArray()
 	{
-		$app = JFactory::getApplication();
-		$isAdmin = $app->isAdmin();
-
 		$this->update();
 
 		$options = array(
-			"environment"   => $this->environment,
-			"source"        => $this->source,
-			"mode"          => $this->mode,
-			"baseUrl"       => $this->baseUrl,
-			"version"       => $this->version
+			"environment" => $this->environment,
+			"source"      => $this->source,
+			"mode"        => $this->mode,
+			"baseUrl"     => $this->baseUrl,
+			"version"     => $this->version
 		);
 
 		// Use script & style path from CDN.
-		if (!empty($this->cdn) && !$isAdmin) {
+		if ($this->enableCdn) {
 			$options["scriptPath"] = $this->cdn . '/scripts';
 			$options["stylePath"]  = $this->cdn . '/styles';
 		}
@@ -329,6 +335,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 		// Attach Foundry configuration & scripts
 		$this->foundry->inline = $this->inline;
+		$this->foundry->enableCdn = $this->enableCdn;
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
@@ -357,7 +364,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$this->path = %BOOTCODE%_FOUNDRY_PATH;
 		$this->uri  = %BOOTCODE%_FOUNDRY_URI;
 		$this->file = %BOOTCODE%_FOUNDRY_CLASSES . '/configuration/config.php';
-		$this->cdn  = (defined('%BOOTCODE%_FOUNDRY_CDN') ? %BOOTCODE%_FOUNDRY_CDN : null);
+		$this->cdn  = (defined('%BOOTCODE%_FOUNDRY_CDN') ? %BOOTCODE%_FOUNDRY_CDN : '');
 
 		parent::__construct();
 	}
@@ -439,11 +446,10 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		$app    = JFactory::getApplication();
 		$config = JFactory::getConfig();
 
-		$appendTitle	= '';
+		$appendTitle = '';
 
-		if( $config->get( 'sitename_pagetitles' ) )
-		{
-			$appendTitle	= $config->get( 'sitename_pagetitles' ) == 1 ? 'before' : 'after';
+		if ($config->get('sitename_pagetitles')) {
+			$appendTitle = $config->get( 'sitename_pagetitles' ) == 1 ? 'before' : 'after';
 		}
 
 		$isAdmin = $app->isAdmin();
@@ -455,16 +461,16 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 			"path"          => $this->uri,
 			"cdn"           => $this->cdn,
 			"extension"     => $this->extension,
-			"cdnPath"       => (defined('%BOOTCODE%_FOUNDRY_JOOMLA_CDN') ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : null),
+			"cdnPath"       => (defined('%BOOTCODE%_FOUNDRY_JOOMLA_CDN') ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : ''),
 			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
 			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
 			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
 			"joomla"        => array(
-				"location"  => ($isAdmin ? "admin" : "site"),
-				"version"   => (string) JVERSION,
-				"debug"     => (bool) $config->get('debug'),
-				"appendTitle"	=> $appendTitle,
-				"sitename"		=> $config->get( 'sitename' )
+				"location"    => ($isAdmin ? "admin" : "site"),
+				"version"     => (string) JVERSION,
+				"debug"       => (bool) $config->get('debug'),
+				"appendTitle" => $appendTitle,
+				"sitename"    => $config->get( 'sitename' )
 			),
 			"locale"        => array(
 				"lang"      => JFactory::getLanguage()->getTag()
@@ -472,7 +478,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		);
 
 		// Prefer CDN over site
-		if ($this->cdn && !$isAdmin) {
+		if ($this->enableCdn) {
 			$data['path'] = $this->cdn;
 		}
 
