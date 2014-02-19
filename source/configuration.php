@@ -100,7 +100,9 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function attach()
 	{
+		$app = JFactory::getApplication();
 		$document = JFactory::getDocument();
+		$isAdmin = $app->isAdmin();
 
 		// Do not attach if document type is not html.
 		if ($document->getType() != 'html') return;
