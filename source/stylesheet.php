@@ -264,16 +264,19 @@ class %BOOTCODE%_Stylesheet {
 
 		$NS = $this->ns . '_';
 
-		$passiveCdn = false;
-		if (defined($NS . 'PASSIVE_CDN')) {
-			$passiveCdn = constant($NS . 'PASSIVE_CDN');
-		}
+		$root_uri = constant($NS . 'JOOMLA_URI');
 
-		// Don't rewrite url if we're on passive CDN.
-		if ($passiveCdn) {
-			$root_uri = constant($NS . 'JOOMLA_URI');
-		} else {
-			$root_uri = constant($NS . 'JOOMLA_CDN');
+		if (defined($NS . 'JOOMLA_CDN')) {
+
+			$passiveCdn = false;
+			if (defined($NS . 'PASSIVE_CDN')) {
+				$passiveCdn = constant($NS . 'PASSIVE_CDN');
+			}
+
+			// Don't rewrite url if we're on passive CDN.
+			if (!$passiveCdn) {
+				$root_uri = constant($NS . 'JOOMLA_CDN');
+			}
 		}
 
 		return $root_uri . '/' . $path;
