@@ -44,6 +44,14 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function update()
 	{
+		$app = JFactory::getApplication();
+		$isAdmin = $app->isAdmin();
+
+		// Disable CDN when running in backend
+		if ($isAdmin) {
+			$this->enableCdn = false;
+		}
+
 		// Allow url overrides
 		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
 		$this->mode        = JRequest::getString($this->shortName . '_mode', $this->mode       , 'GET');
@@ -124,7 +132,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		// Prefer CDN over site uri
-		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
+		$uri = $this->enableCdn ? $this->cdn : $this->uri;
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -166,13 +174,13 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function write()
 	{
-		// Prefer CDN over site uri
-		$app = JFactory::getApplication();
-		$isAdmin = $app->isAdmin();
-		$uri = ($this->cdn && !$isAdmin ? $this->cdn : $this->uri);
-
 		$configPath = $this->path . '/config/';
 		$configUri  = $uri        . '/config/';
+
+		// Prefer CDN
+		if ($this->enableCdn) {
+			$configUri = $this->cdn . '/config/';
+		}
 
 		$script = new stdClass();
 		$script->id     = $this->id();
@@ -263,6 +271,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->path          = constant($NS.'MEDIA');
 		$this->uri           = constant($NS.'MEDIA_URI');
 		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : null);
+		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : '');
 
 		$this->file = $this->path . '/config.php';
 
@@ -310,9 +319,6 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 	public function toArray()
 	{
-		$app = JFactory::getApplication();
-		$isAdmin = $app->isAdmin();
-
 		$this->update();
 
 		$options = array(
@@ -324,7 +330,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		);
 
 		// Use script & style path from CDN.
-		if (!empty($this->cdn) && !$isAdmin) {
+		if ($this->enableCdn) {
 			$options["scriptPath"] = $this->cdn . '/scripts';
 			$options["stylePath"]  = $this->cdn . '/styles';
 		}
@@ -341,6 +347,8 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 		// Attach Foundry configuration & scripts
 		$this->foundry->inline = $this->inline;
+		$this->foundry->enableCdn = $this->enableCdn;
+		$this->foundry->passiveCdn = $this->passiveCdn;
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
@@ -484,7 +492,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		);
 
 		// Prefer CDN over site
-		if ($this->cdn && !$isAdmin) {
+		if ($this->enableCdn) {
 			$data['path'] = $this->cdn;
 		}
 
