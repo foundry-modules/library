@@ -32,6 +32,10 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $mode        = 'compressed';
 	public $extension   = '.min.js';
 
+	public $cdn;
+	public $enableCdn  = false;
+	public $passiveCdn = false;
+
 	public $scripts    = array();
 	public $async      = true;
 	public $defer      = true;
@@ -175,7 +179,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public function write()
 	{
 		$configPath = $this->path . '/config/';
-		$configUri  = $uri        . '/config/';
+		$configUri  = $this->uri  . '/config/';
 
 		// Prefer CDN
 		if ($this->enableCdn) {
@@ -271,7 +275,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->path          = constant($NS.'MEDIA');
 		$this->uri           = constant($NS.'MEDIA_URI');
 		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : null);
-		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : '');
+		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : false);
 
 		$this->file = $this->path . '/config.php';
 
