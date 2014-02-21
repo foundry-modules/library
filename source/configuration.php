@@ -122,7 +122,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		// Prefer CDN over site uri
-		$uri = $this->enableCdn ? $this->cdn : $this->uri;
+		$uri = $this->enableCdn && !$this->passiveCdn ? $this->cdn : $this->uri;
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -167,7 +167,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		$configUri  = $this->uri  . '/config/';
 
 		// Prefer CDN
-		if ($this->enableCdn) {
+		if ($this->enableCdn && !$this->passiveCdn) {
 			$configUri = $this->cdn . '/config/';
 		}
 
@@ -260,7 +260,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->path          = constant($NS.'MEDIA');
 		$this->uri           = constant($NS.'MEDIA_URI');
 		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : '');
-		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : '');
+		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : false);
 
 		$this->file = $this->path . '/config.php';
 
