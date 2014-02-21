@@ -260,6 +260,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->path          = constant($NS.'MEDIA');
 		$this->uri           = constant($NS.'MEDIA_URI');
 		$this->cdn           = (defined($NS.'MEDIA_CDN') ? constant($NS.'MEDIA_CDN') : '');
+		$this->passiveCdn    = (defined($NS.'PASSIVE_CDN') ? constant($NS.'PASSIVE_CDN') : '');
 
 		$this->file = $this->path . '/config.php';
 
@@ -336,6 +337,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		// Attach Foundry configuration & scripts
 		$this->foundry->inline = $this->inline;
 		$this->foundry->enableCdn = $this->enableCdn;
+		$this->foundry->passiveCdn = $this->passiveCdn;
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
