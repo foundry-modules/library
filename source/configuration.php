@@ -135,7 +135,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		// Prefer CDN over site uri
-		$uri = $this->enableCdn ? $this->cdn : $this->uri;
+		$uri = $this->enableCdn && !$this->passiveCdn ? $this->cdn : $this->uri;
 
 		// Additional scripts uses addCustomTag because
 		// we want to fill in defer & async attribute so
@@ -181,7 +181,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		$configUri  = $this->uri  . '/config/';
 
 		// Prefer CDN
-		if ($this->enableCdn) {
+		if ($this->enableCdn && !$this->passiveCdn) {
 			$configUri = $this->cdn . '/config/';
 		}
 
