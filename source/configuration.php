@@ -24,7 +24,6 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $shortName;
 	public $path;
 	public $uri;
-	public $cdn;
 	public $file;
 
 	public $environment = 'static';
