@@ -345,7 +345,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 		// And lastly an ajax token ;)
 		$document = JFactory::getDocument();
-		$document->addCustomTag('<meta property="' . strtolower($this->fullName) . ':token" content="' . $this->token . '" />');
+		$document->addCustomTag('<meta name="' . strtolower($this->fullName) . ':token" content="' . $this->token . '" />');
 	}
 
 	public function purge()
