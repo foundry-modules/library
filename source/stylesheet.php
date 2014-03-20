@@ -350,7 +350,10 @@ class %BOOTCODE%_Stylesheet {
 			}
 		}
 
-		return $path . $fix;
+		$rel = $path . $fix;
+		$rel = (substr($rel, 0, 2)=='./') ? substr($rel, 2) : '';
+
+		return $rel;
 	}
 
 	public function compiler() {
