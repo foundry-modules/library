@@ -691,7 +691,7 @@ class %BOOTCODE%_Stylesheet {
 		$app = JFactory::getApplication();
 		$isAdmin = $app->isAdmin();
 
-		// If this stylesheet has overridem
+		// If this stylesheet has overrides
 		if ($this->location!=='override' && $allowOverride && $this->hasOverride()) {
 
 			// get override stylesheet instance,
@@ -704,11 +704,24 @@ class %BOOTCODE%_Stylesheet {
 		// Load manifest file.
 		$manifest = $this->manifest();
 
-		// Determine the type of stylesheet to attach
-		$type = $minified ? 'minified' : 'css';
 		$uris = array();
 
 		foreach ($manifest as $group => $sections) {
+
+			// Determine the type of stylesheet to attach
+			$type = $minified ? 'minified' : 'css';
+
+			// Fallback to css if minified not exists,
+			// only for template overrides because
+			// we don't want too much disk i/o.
+			if ($this->location=='override' && $minified) {
+
+				$minifiedFile = $this->file($group, $type);
+
+				if (!JFile::exists($minifiedFile)) {
+					$type = 'css';
+				}
+			}
 
 			// Get stylesheet uri.
 			// Do not attach CDN uri for backend
