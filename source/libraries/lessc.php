@@ -73,7 +73,7 @@ class %BOOTCODE%_lessc {
 		// shouldn't it always follow the original sequence?
 		$importDir = empty($this->initialImportDir) ? $this->importDir : $this->initialImportDir;
 
-		foreach ((array)$this->importDir as $dir) {
+		foreach ((array)$importDir as $dir) {
 			$full = $dir.(substr($dir, -1) != '/' ? '/' : '').$url;
 			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
 				return $file;
