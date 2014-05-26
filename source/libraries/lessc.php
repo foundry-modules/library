@@ -221,7 +221,14 @@ class %BOOTCODE%_lessc {
 		$env = $this->pushEnv();
 
 		$selectors = $this->compileSelectors($block->tags);
-		$env->selectors = $this->multiplySelectors($selectors);
+
+		// @hack: Block whose parent is a directive (e.g. keyframe) should not have its selectors multiplied.
+		if (isset($block->parent) && $block->parent->type=='directive') {
+			$env->selectors = $selectors;
+		} else {
+			$env->selectors = $this->multiplySelectors($selectors);
+		}
+
 		$out = $this->makeOutputBlock(null, $env->selectors);
 
 		$this->scope->children[] = $out;
