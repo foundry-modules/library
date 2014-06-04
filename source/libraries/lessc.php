@@ -644,7 +644,7 @@ class %BOOTCODE%_lessc {
 
 	// sets all argument names in $args to either the default value
 	// or the one passed in through $values
-	protected function zipSetArgs($args, $orderedValues, $keywordValues) {
+	protected function zipSetArgs($args, $orderedValues, $keywordValues, $propagate=false) {
 		$assignedValues = array();
 
 		$i = 0;
@@ -666,7 +666,8 @@ class %BOOTCODE%_lessc {
 				}
 
 				$value = $this->reduce($value);
-				$this->set($a[1], $value);
+				// @hack: Variables from mixin scopes are not propagated
+				$this->set($a[1], $value, $propagate);
 				$assignedValues[] = $value;
 			} else {
 				// a lit
@@ -750,7 +751,9 @@ class %BOOTCODE%_lessc {
 				if (isset($mixin->args)) {
 					$haveArgs = true;
 					$this->pushEnv();
-					$this->zipSetArgs($mixin->args, $orderedArgs, $keywordArgs);
+
+					// @hack: Do not propagate variables within mixin scopes
+					$this->zipSetArgs($mixin->args, $orderedArgs, $keywordArgs, false);
 				}
 
 				$oldParent = $mixin->parent;
@@ -1840,10 +1843,22 @@ class %BOOTCODE%_lessc {
 	}
 
 	// set something in the current env
-	protected function set($name, $value) {
-		$this->env->store[$name] = $value;
-	}
+	protected function set($name, $value, $propagate=true) {
 
+		// @hack: Also store variable in parent environments.
+		$current = $this->env;
+
+		// @hack: Option not to propagate variables.
+		// Variables within mixin scopes are not propagated.
+		if ($propagate) {
+			while ($current) {
+				$current->store[$name] = $value;
+				$current = isset($current->parent) ? $current->parent : false;
+			}
+		} else {
+			$current->store[$name] = $value;
+		}
+	}
 
 	// get the highest occurrence entry for a name
 	protected function get($name) {
