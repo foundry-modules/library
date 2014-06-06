@@ -897,8 +897,13 @@ class %BOOTCODE%_lessc {
 
 			// @hack: Normalize urls
 			$val = $this->compileValue($args);
+
 			if ($name=='url') {
-				$val = $this->normalizePath($val);
+				$first = substr($val, 0, 1);
+				$last = substr($val, -1);
+				$hasQuotes = ($first=="'" || $first=='"') && ($last=="'" || $last=='"');
+				$val = $this->normalizePath($hasQuotes ? substr($val, 1, -1) : $val);
+				$val = $hasQuotes ? $first . $val . $last : $val;
 			}
 
 			return $name.'('.$val.')';
@@ -2156,7 +2161,7 @@ class %BOOTCODE%_lessc {
 	public function normalizePath($path, $sep='/') {
 
 		// Do not normalize path that is a data uri
-		if (substr($path, 5)=='data:') return $path;
+		if (substr($path, 0, 5)=='data:') return $path;
 
 	    $relChars   = "\.\\$sep";
 	    $relPathPos = preg_match('/^[' . $relChars . ']*(.)/', $path, $m, PREG_OFFSET_CAPTURE) ? $m[1][1] : -1;
