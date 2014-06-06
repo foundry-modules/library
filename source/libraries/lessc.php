@@ -894,6 +894,13 @@ class %BOOTCODE%_lessc {
 
 		case 'function':
 			list(, $name, $args) = $value;
+
+			// @hack: Normalize urls
+			$val = $this->compileValue($args);
+			if ($name=='url') {
+				$val = $this->normalizePath($val);
+			}
+
 			return $name.'('.$this->compileValue($args).')';
 		default: // assumed to be unit
 			$this->throwError("unknown value type: $value[0]");
@@ -2143,6 +2150,53 @@ class %BOOTCODE%_lessc {
 			$less = new self;
 		}
 		return $less->cachedCompile($in, $force);
+	}
+
+	// @hack: Add function to normalize path that also handles relative path
+	public function normalizePath($path, $sep='/') {
+
+		// Do not normalize path that is a data uri
+		if (substr($path, 5)=='data:') return $path;
+
+	    $relChars   = "\.\\$sep";
+	    $relPathPos = preg_match('/^[' . $relChars . ']*(.)/', $path, $m, PREG_OFFSET_CAPTURE) ? $m[1][1] : -1;
+	    $relPath    = substr($path, 0, $relPathPos);
+	    $path       = substr($path, $relPathPos);
+
+	    // If path begins with "/../", convert it to "../"
+	    $relPath = (substr($relPath, 0, 4)=="$sep..$sep") ? substr($relPath, 1) : $relPath;
+
+	    // If path has current path notation (single dot), strip it off.
+	    $parts = explode($sep, $relPath);
+	    $safe = array();
+
+	    foreach($parts as $i => $part) {
+	        if ($part=='.') continue;
+	        $safe[] = $part;
+	    }
+
+	    $relPath = implode($sep, $safe);
+
+	    // Normalize path
+	    $parts = explode($sep, $path);
+	    $safe = array();
+
+	   foreach ($parts as $i => $part) {
+	        // For // and .
+	        if (trim($part)=="" || $part=='.') {
+	            continue;
+	        // For ..
+	        } elseif ($part=='..') {
+	            array_pop($safe);
+	            continue;
+	        } else {
+	            $safe[] = $part;
+	        }
+	    }
+
+	    $path = implode($sep, $safe);
+
+	    return $relPath . $path;
 	}
 
 	static protected $cssColors = array(
