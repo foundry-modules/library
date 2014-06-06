@@ -901,7 +901,7 @@ class %BOOTCODE%_lessc {
 				$val = $this->normalizePath($val);
 			}
 
-			return $name.'('.$this->compileValue($args).')';
+			return $name.'('.$val.')';
 		default: // assumed to be unit
 			$this->throwError("unknown value type: $value[0]");
 		}
