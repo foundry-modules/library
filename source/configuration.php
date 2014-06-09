@@ -416,6 +416,7 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 					'bootstrap3',
 					'responsive',
 					'utils',
+					'storage',
 					'uri',
 					'mvc',
 					'joomla',
