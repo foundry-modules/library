@@ -12,7 +12,7 @@ class %BOOTCODE%_Stylesheet {
 
 	public $ns = null;
 
-	private $_override;
+	private $class = __CLASS__;
 
 	public $workspace = array(
 		'site'       => null,
@@ -26,6 +26,10 @@ class %BOOTCODE%_Stylesheet {
 	public $location;
 
 	public $name;
+
+	public $isOverride = false;
+
+	public $overrideStylesheet;
 
 	static $attached = array();
 
@@ -45,10 +49,13 @@ class %BOOTCODE%_Stylesheet {
 
 	public function __construct($ns='', $workspace=array(), $location) {
 
-		$this->ns        = $ns;
-		$this->workspace = array_merge($this->workspace, $workspace);
-		$this->location  = $location;
-		$this->name      = $this->workspace[$this->location];
+		$isOverride = preg_match('/(.*)(-override)$/', $location, $parts);
+
+		$this->ns         = $ns;
+		$this->workspace  = array_merge($this->workspace, $workspace);
+		$this->location   = $isOverride ? $parts[1] : $location;
+		$this->name       = $this->workspace[$isOverride ? 'override' : $this->location];
+		$this->isOverride = $isOverride;
 	}
 
 	public function folder($name='current') {
@@ -64,7 +71,7 @@ class %BOOTCODE%_Stylesheet {
 
 			case 'override':
 				$administrator = ($this->location=='admin') ? 'administrator/' : '';
-				$component = ($this->location=='module') ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
+				$component = (preg_match('/^module/', $this->location)) ? $this->workspace['module'] : constant($NS . 'COMPONENT_NAME');
 				$template = $this->workspace['override'];
 				$folder = constant($NS . 'JOOMLA') . "$administrator/templates/$template/html/$component/styles";
 				break;
@@ -168,7 +175,7 @@ class %BOOTCODE%_Stylesheet {
 		if ($seek) {
 
 			// Get list of import ordering locations
-			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location);
+			$locations = FD40_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
 
 			// Go through each of the location
 			foreach ($locations as $location) {
@@ -519,7 +526,7 @@ class %BOOTCODE%_Stylesheet {
 		// Generate a list of folders to strip
 		if (empty($folders)) {
 
-			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location);
+			$locations = FD40_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
 			$folders = array();
 
 			foreach ($locations as $location) {
@@ -606,11 +613,11 @@ class %BOOTCODE%_Stylesheet {
 
 	public function override() {
 
-		if (empty($this->_override)) {
-			$this->_override = new self($this->ns, $this->workspace, 'override');
+		if (empty($this->overrideStylesheet)) {
+			$this->overrideStylesheet = new $this->class($this->ns, $this->workspace, $this->location . '-override');
 		}
 
-		return $this->_override;
+		return $this->overrideStylesheet;
 	}
 
 	public function overrides() {
@@ -647,12 +654,10 @@ class %BOOTCODE%_Stylesheet {
 
 	public function hasOverride() {
 
-		// static $hasOverride;
+		if ($this->isOverride) return false;
 
-		if (!isset($override)) {
-			$overrideFile = $this->file(array('location' => 'override', 'type' => 'css'));
-			$hasOverride = JFile::exists($overrideFile);
-		}
+		$overrideFile = $this->file(array('location' => 'override', 'type' => 'css'));
+		$hasOverride = JFile::exists($overrideFile);
 
 		return $hasOverride;
 	}
@@ -692,7 +697,7 @@ class %BOOTCODE%_Stylesheet {
 		$isAdmin = $app->isAdmin();
 
 		// If this stylesheet has overrides
-		if ($this->location!=='override' && $allowOverride && $this->hasOverride()) {
+		if (!$this->isOverride && $allowOverride && $this->hasOverride()) {
 
 			// get override stylesheet instance,
 			$override = $this->override();
@@ -711,26 +716,33 @@ class %BOOTCODE%_Stylesheet {
 			// Determine the type of stylesheet to attach
 			$type = $minified ? 'minified' : 'css';
 
+			// Build path options
+			$target = array(
+				'location' => $this->isOverride ? 'override' : $this->location,
+				'filename' => $group,
+				'type' => $type
+			);
+
 			// Fallback to css if minified not exists,
 			// only for template overrides because
 			// we don't want too much disk i/o.
-			if ($this->location=='override' && $minified) {
+			if ($this->isOverride && $minified) {
 
-				$minifiedFile = $this->file($group, $type);
+				$minifiedFile = $this->file($target);
 
 				if (!JFile::exists($minifiedFile)) {
-					$type = 'css';
+					$target['type'] = 'css';
 				}
 			}
 
 			// Get stylesheet uri.
 			// Do not attach CDN uri for backend
 			if ($isAdmin) {
-				$uri = $this->uri($group, $type);
+				$uri = $this->uri($target);
 
 			// Prefer CDN over site uri if possible
 			} else {
-				$uri = $this->cdn($group, $type);
+				$uri = $this->cdn($target);
 			}
 
 			$uris[] = $uri;

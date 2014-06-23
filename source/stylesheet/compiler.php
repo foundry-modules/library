@@ -44,17 +44,34 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 		),
 
 		'module' => array(
+			'user',
 			'module',
 			'component',
 			'global'
 		),
 
-		// TODO: Revamp override system. This only support site overrides.
-		'override' => array(
+		'site-override' => array(
 			'user',
 			'override',
 			'site',
 			'site_base',
+			'component',
+			'global'
+		),
+
+		'admin-override' => array(
+			'user',
+			'override',
+			'admin',
+			'admin_base',
+			'component',
+			'global'
+		),
+
+		'module-override' => array(
+			'user',
+			'override',
+			'module',
 			'component',
 			'global'
 		),
@@ -102,6 +119,10 @@ class %BOOTCODE%_Stylesheet_Compiler extends %BOOTCODE%_lessc {
 
 		// Get current stylesheet location
 		$currentLocation = $this->stylesheet->location;
+
+		if ($this->stylesheet->isOverride) {
+			$currentLocation .= '-override';
+		}
 
 		// Get paths
 		$in    = $this->stylesheet->file(array('filename' => $section, 'type' => 'less', 'seek' => true));
