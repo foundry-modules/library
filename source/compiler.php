@@ -234,21 +234,21 @@ class %BOOTCODE%_FoundryCompiler
 
 	public function compile($manifest="", $options)
 	{
-		$manifest = $this->getManifest($manifest);
-
 		// If manifest is invalid, stop.
-		if (empty($manifest)) {
+		if (!$manifest) {
 			return;
 		}
 
 		// Build dependencies
 		$deps = $this->getDependencies($manifest);
 
-		$modes = array('static', 'optimized', 'resources');
+		$modes = array('static', 'optimized');
 
-		foreach($modes as $mode) {
+		foreach ($modes as $mode) {
 
-			if (empty($options[$mode])) continue;
+			if (empty($options[$mode])) {
+				continue;
+			}
 
 			$file = $options[$mode];
 
@@ -258,15 +258,10 @@ class %BOOTCODE%_FoundryCompiler
 
 			// Compressed file
 			// We don't compress resources script.
-			if (!empty($options["minify"]) && $options["minify"] && $mode!=='resources') {
+			if (!empty($options["minify"]) && $options["minify"]) {
 				$compressed = $this->build($mode, $deps, true);
+				
 				$state = JFile::write($file . '.min.js', $compressed);
-			}
-
-			// Generate manifest file for resources
-			if ($mode=='resources') {
-				$resources_manifest = $this->build('resources_manifest', $deps);
-				$state = JFile::write($file . '.json', $resources_manifest);
 			}
 		}
 
