@@ -282,6 +282,9 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		// Attach component configuration & scripts
 		$app = JFactory::getApplication();
 		$this->mode = $app->input->get('fd_mode', $this->mode, 'string');
+
+		// Attach component configuration & scripts
+		parent::attach();
 	}
 
 	public function purge()
