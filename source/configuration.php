@@ -117,7 +117,7 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		foreach ($this->scripts as $i => $script) {
 			$scriptPath = $uri . '/scripts/' . $script . $this->extension;
 			$scriptTag  = $this->createScriptTag($scriptPath);
-			$document->addCustomTag($scriptTag);
+			$doc->addCustomTag($scriptTag);
 		}
 	}
 
@@ -280,9 +280,9 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
-			$app = JFactory::getApplication();
+		$app = JFactory::getApplication();
 		$this->mode = $app->input->get('fd_mode', $this->mode, 'string');
-
+	}
 
 	public function purge()
 	{
