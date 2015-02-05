@@ -29,6 +29,8 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 	public $defer      = true;
 	public $inline     = false;
 
+	static $bootloader = false;
+
 	public function __construct()
 	{
 		$this->update();
@@ -45,8 +47,8 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 
 		// Allow url overrides
-		$this->environment = JRequest::getString($this->shortName . '_env' , $this->environment, 'GET');
-		$this->mode        = JRequest::getString($this->shortName . '_mode', $this->mode       , 'GET');
+		$this->environment = $app->input->get($this->shortName . '_env', $this->environment, 'string');
+		$this->mode = $app->input->get($this->shortName . '_mode', $this->mode, 'string');
 
 		// Explicitly set mode to uncompressed when
 		// under development mode.
@@ -54,17 +56,14 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 			$this->mode = 'uncompressed';
 		}
 
-		switch($this->mode) {
-
-			case 'compressed':
-			default:
-				$this->extension = '.min.js';
-				break;
-
-			case 'uncompressed':
-				$this->extension = '.js';
-				break;
+		if ($this->mode == 'compressed') {
+			$this->extension = '.min.js';
 		}
+
+		if ($this->mode == 'uncompressed') {
+			$this->extension = '.js';
+		}
+
 	}
 
 	public function id()
@@ -100,26 +99,14 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 
 	public function attach()
 	{
-		$document = JFactory::getDocument();
+		$doc = JFactory::getDocument();
 
-		// Do not attach if document type is not html.
-		if ($document->getType() != 'html') return;
+		if ($doc->getType() != 'html'){
+			return;	
+		} 
 
-		if ($this->inline) {
-
-			// Load configuration script inline
-			// This is used together with JS compressor plugins that
-			// defers the loading of configuration scripts.
-			// Configuration scripts CANNOT be deferred because
-			// configuration scripts provide bootloaders and
-			// abstract component which inline scripts rely upon.
-			$this->loadInline();
-
-		} else {
-
-			// Load configuration script first
-			$this->load();
-		}
+		// Load custom bootloader
+		$this->loadBootloader();
 
 		// Prefer CDN over site uri
 		$uri = $this->enableCdn && !$this->passiveCdn ? $this->cdn : $this->uri;
@@ -134,72 +121,26 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		}
 	}
 
-	public function load()
+	/**
+	 * Loads the bootloader
+	 *
+	 * @since	5.0
+	 * @access	public
+	 * @param	string
+	 * @return	
+	 */
+	public function loadBootloader()
 	{
-		// This is cached so it doesn't always write to file.
-		$script = $this->write();
+		if (!self::$bootloader) {
+			// Attach the bootloader 
+			$doc = JFactory::getDocument();
+			$bootloader = FD50_FOUNDRY_URI . '/scripts/bootloader.js';
 
-		// If unable to write to file, e.g. file permissions issue.
-		// then load the configuration script inline.
-		if ($script->failed) {
-			$this->loadInline();
+			$doc->addScript($bootloader);
 
-		// Else add to the very top of document head.
-		} else {
-			$document = JFactory::getDocument();
-			$document->addScript($script->url);
+			self::$bootloader = true;
 		}
 
-		return $script;
-	}
-
-	public function loadInline()
-	{
-		$document = JFactory::getDocument();
-
-		$contents = $this->export();
-		$document->addCustomTag('<script>' . $contents . '</script>');
-	}
-
-	public function write()
-	{
-		$configPath = $this->path . '/config/';
-		$configUri  = $this->uri  . '/config/';
-
-		// Prefer CDN
-		if ($this->enableCdn && !$this->passiveCdn) {
-			$configUri = $this->cdn . '/config/';
-		}
-
-		$script = new stdClass();
-		$script->id     = $this->id();
-		$script->file   = $configPath . $script->id . '.js';
-		$script->url    = $configUri  . $script->id . '.js';
-		$script->data   = $configPath . $script->id . '.json';
-		$script->failed = false;
-
-		// Create config folder if it doesn't exist
-		if (!JFolder::exists($configPath)) {
-			JFolder::create($configPath);
-		}
-
-		// Write config file
-		if (!JFile::exists($script->file)) {
-
-			$contents = $this->export();
-
-			if (!JFile::write($script->file, $contents)) {
-				$script->failed = true;
-			}
-
-			// Also write cache data
-			$data = $this->data();
-			$jsonData = json_encode($data);
-
-			JFile::write($script->data, $jsonData);
-		}
-
-		return $script;
 	}
 
 	public function export()
@@ -281,14 +222,6 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 			$this->foundry->environment = $this->environment;
 			$this->foundry->mode        = $this->mode;
 
-			// @TODO: Automatically switch to remote source when
-			// under static mode + full Foundry is not installed.
-			if ($this->environment=="static") {
-				// $this->foundry->source = 'remote';
-			}
-
-			// @TODO: Switch environment back to static if full foundry doesn't exists.
-
 		// If we're attaching a secondary component
 		} else {
 
@@ -334,6 +267,12 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		// Update configuration
 		$this->update();
 
+		// Attach the meta tag on the page
+		$doc = JFactory::getDocument();
+		$options = array($this->mode, $this->version, $this->baseUrl, $this->cdn, $this->token);
+
+		$doc->addCustomTag('<meta name="FD50:' . $this->fullName . '" content="' . implode(',', $options) . '" />');
+
 		// Attach Foundry configuration & scripts
 		$this->foundry->inline = $this->inline;
 		$this->foundry->enableCdn = $this->enableCdn;
@@ -341,12 +280,9 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 		$this->foundry->attach();
 
 		// Attach component configuration & scripts
-		parent::attach();
+			$app = JFactory::getApplication();
+		$this->mode = $app->input->get('fd_mode', $this->mode, 'string');
 
-		// And lastly an ajax token ;)
-		$document = JFactory::getDocument();
-		$document->addCustomTag('<meta name="' . strtolower($this->fullName) . ':token" content="' . $this->token . '" />');
-	}
 
 	public function purge()
 	{
@@ -387,7 +323,8 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 		parent::update();
 
 		// Allow url overrides
-		$this->mode = JRequest::getString('fd_mode', $this->mode, 'GET');
+		$app = JFactory::getApplication();
+		$this->mode = $app->input->get('fd_mode', $this->mode, 'string');
 
 		switch ($this->environment) {
 
@@ -459,25 +396,20 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 		$data = array(
 			"environment"   => $this->environment,
-			"source"        => $this->source,
 			"mode"          => $this->mode,
 			"path"          => $this->uri,
 			"cdn"           => $this->cdn,
 			"extension"     => $this->extension,
-			"cdnPath"       => (defined('%BOOTCODE%_FOUNDRY_JOOMLA_CDN') ? %BOOTCODE%_FOUNDRY_JOOMLA_CDN : ''),
-			"rootPath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI,
-			"basePath"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
-			"indexUrl"      => %BOOTCODE%_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
-			"joomla"        => array(
-				"location"    => ($isAdmin ? "admin" : "site"),
-				"version"     => (string) JVERSION,
-				"debug"       => (bool) $config->get('debug'),
-				"appendTitle" => $appendTitle,
-				"sitename"    => $config->get( 'sitename' )
-			),
-			"locale"        => array(
-				"lang"      => JFactory::getLanguage()->getTag()
-			)
+			"cdnPath"       => (defined('FD50_FOUNDRY_JOOMLA_CDN') ? FD50_FOUNDRY_JOOMLA_CDN : ''),
+			"rootPath"      => FD50_FOUNDRY_JOOMLA_URI,
+			"basePath"      => FD50_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator' : ''),
+			"indexUrl"      => FD50_FOUNDRY_JOOMLA_URI . ($isAdmin ? '/administrator/index.php' : '/index.php'),
+			"joomla.location" => ($isAdmin ? "admin" : "site"),
+			"joomla.version" => (string) JVERSION,
+			"joomla.debug"       => (bool) $config->get('debug'),
+			"joomla.appendTitle" => $appendTitle,
+			"joomla.sitename" => $config->get('sitename'),
+			"locale" => JFactory::getLanguage()->getTag()
 		);
 
 		// Prefer CDN over site
@@ -490,7 +422,14 @@ class %BOOTCODE%_FoundryConfiguration extends %BOOTCODE%_FoundryBaseConfiguratio
 
 	public function attach()
 	{
-		if (self::$attached) return;
+		if (self::$attached) {
+			return;
+		}
+
+		$doc = JFactory::getDocument();
+		$options = $this->toArray();
+
+		$doc->addCustomTag('<meta name="FD50" content="' . implode(',', $options) . '" />');
 
 		parent::attach();
 
