@@ -175,7 +175,7 @@ class %BOOTCODE%_Stylesheet {
 		if ($seek) {
 
 			// Get list of import ordering locations
-			$locations = FD40_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
+			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
 
 			// Go through each of the location
 			foreach ($locations as $location) {
@@ -526,7 +526,7 @@ class %BOOTCODE%_Stylesheet {
 		// Generate a list of folders to strip
 		if (empty($folders)) {
 
-			$locations = FD40_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
+			$locations = %BOOTCODE%_Stylesheet_Compiler::importOrdering($this->location . ($this->isOverride ? '-override' : ''));
 			$folders = array();
 
 			foreach ($locations as $location) {
@@ -811,7 +811,7 @@ class %BOOTCODE%_Stylesheet {
 
 					if ($filetype=='css' || $filetype=='minified') {
 						$content  = JFile::read($file);
-						$rules = FD40_Stylesheet_Analyzer::rules($content);
+						$rules = %BOOTCODE%_Stylesheet_Analyzer::rules($content);
 						$rules = count($rules);
 					}
 				} else {
