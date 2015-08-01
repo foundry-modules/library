@@ -269,7 +269,7 @@ class %BOOTCODE%_FoundryComponentConfiguration extends %BOOTCODE%_FoundryBaseCon
 
 		// Attach the meta tag on the page
 		$doc = JFactory::getDocument();
-		$options = array($this->mode, $this->version, $this->baseUrl, $this->cdn, $this->token);
+		$options = array($this->mode, $this->version, $this->baseUrl, $this->cdn, $this->token, $this->ajaxUrl);
 
 		$doc->addCustomTag('<meta name="FD50:' . $this->fullName . '" content="' . implode(',', $options) . '" />');
 
