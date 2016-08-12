@@ -134,7 +134,12 @@ class %BOOTCODE%_FoundryBaseConfiguration {
 		if (!self::$bootloader) {
 			// Attach the bootloader 
 			$doc = JFactory::getDocument();
-			$bootloader = FD50_FOUNDRY_URI . '/scripts/bootloader.js';
+			
+			if ($this->environment == 'static') {
+				$bootloader = FD50_FOUNDRY_URI . '/scripts/bootloader.min.js';	
+			} else {
+				$bootloader = FD50_FOUNDRY_URI . '/scripts/bootloader.js';
+			}
 
 			$doc->addScript($bootloader);
 
